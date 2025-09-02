@@ -81,8 +81,8 @@ export default function SingleProductPage() {
         <div className="min-h-screen bg-gray-50 pb-12">
             <CategoryNav></CategoryNav>
             {/* Breadcrumbs */}
-            <div className="bg-white border-b">
-                <div className="container mx-auto px-4 py-3">
+            <div className="bg-white">
+                <div className="container mx-auto px-4 py-2">
                     <div className="flex items-center text-sm text-gray-500">
                         <Link href="/" className="hover:text-blue-600">Home</Link>
                         <ChevronRight className="w-4 h-4 mx-2" />

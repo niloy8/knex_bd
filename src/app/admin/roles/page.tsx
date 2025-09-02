@@ -44,7 +44,7 @@ export default function AdminRoles() {
 
     const handleSaveRole = () => {
         if (!roleName.trim()) return;
-        
+
         if (editingRole) {
             setRoles(roles.map(r => r.id === editingRole.id ? { ...r, name: roleName, permissions: selectedPermissions } : r));
         } else {
@@ -92,13 +92,13 @@ export default function AdminRoles() {
                                     <Shield className="w-6 h-6 text-blue-600" />
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <button 
+                                    <button
                                         onClick={() => handleEditRole(role)}
                                         className="p-1.5 hover:bg-blue-50 text-blue-600 rounded transition-colors"
                                     >
                                         <Edit className="w-4 h-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => handleDeleteRole(role.id)}
                                         className="p-1.5 hover:bg-red-50 text-red-600 rounded transition-colors"
                                     >
@@ -221,7 +221,7 @@ export default function AdminRoles() {
                                             <input
                                                 type="checkbox"
                                                 checked={selectedPermissions.includes("all")}
-                                                onChange={() => setSelectedPermissions(prev => 
+                                                onChange={() => setSelectedPermissions(prev =>
                                                     prev.includes("all") ? [] : ["all"]
                                                 )}
                                                 className="w-5 h-5 text-blue-600 rounded"
