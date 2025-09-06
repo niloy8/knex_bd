@@ -28,10 +28,8 @@ export default function ProductListCard({
     discount,
     rating,
     totalRatings,
-    totalReviews,
     image,
     features,
-    assured,
     badge,
     href,
 }: ProductListCardProps) {

@@ -26,7 +26,7 @@ export default function ProductGridCard({
     rating,
     totalRatings,
     image,
-    assured,
+
     href,
 }: ProductGridCardProps) {
     const [isWishlisted, setIsWishlisted] = useState(false);
