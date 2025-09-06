@@ -10,7 +10,7 @@ export default function Header() {
 
     return (
         <header className="bg-white shadow-sm ">
-            <div className="max-w-7xl mx-auto px-4 py-1">
+            <div className="max-w-7xl mx-auto px-4 ">
                 <div className="flex items-center justify-between lg:justify-around md:justify-around gap-4">
                     <button onClick={() => setMenuOpen(true)} className="md:hidden"><Menu size={24} /></button>
                     <Link href="/">

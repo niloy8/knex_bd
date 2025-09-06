@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Trash2, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import CategoryNav from "@/components/CategoryNav";
 
 interface WishlistItem {
     id: string;
@@ -62,8 +63,11 @@ export default function WishlistPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4">
+        <div className="min-h-screen bg-gray-50">
+
+            <CategoryNav></CategoryNav>
+
+            <div className="max-w-7xl mx-auto px-4 mt-2.5">
                 {/* Header with Heart Icon */}
                 <div className="flex flex-col items-center mb-8">
                     <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-blue-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
