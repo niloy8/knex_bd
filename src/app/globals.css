@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@keyframes fillBar {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}

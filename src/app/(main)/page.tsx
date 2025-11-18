@@ -4,6 +4,12 @@ import Banner from "@/components/Banner";
 import SectionHeader from "@/components/SectionHeader";
 
 export default function HomePage() {
+    const banners = [
+        { title: "Office Chairs", subtitle: "Green Soul, Cell Bell & more", price: "From ₹2,999", bgColor: "bg-gradient-to-r from-blue-600 to-indigo-600", image: "🪑" },
+        { title: "Gaming Laptops", subtitle: "ASUS, MSI & more", price: "From ₹49,999", bgColor: "bg-gradient-to-r from-purple-600 to-pink-600", image: "💻" },
+        { title: "Smart Watches", subtitle: "Apple, Samsung & more", price: "From ₹1,999", bgColor: "bg-gradient-to-r from-green-600 to-teal-600", image: "⌚" },
+    ];
+
     const categories = [
         { name: "Mobiles & Tablets", icon: "📱", href: "/category/mobiles" },
         { name: "Fashion", icon: "👗", href: "/category/fashion" },
@@ -13,9 +19,7 @@ export default function HomePage() {
         { name: "Beauty & Food", icon: "💄", href: "/category/beauty" },
         { name: "Flight Bookings", icon: "✈️", href: "/flights", badge: "NEW" },
         { name: "Grocery", icon: "🛒", href: "/category/grocery" },
-    ];
-
-    const fashionDeals = [
+    ]; const fashionDeals = [
         { title: "Sports Shoes", price: "Min. 70% Off", image: "👟", href: "/deals/shoes" },
         { title: "Slippers", price: "Min. 70% Off", image: "🩴", href: "/deals/slippers" },
         { title: "Smart Watch", price: "From ₹999", image: "⌚", href: "/deals/watches" },
@@ -51,14 +55,7 @@ export default function HomePage() {
 
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
                 {/* Hero Banner */}
-                <Banner
-                    title="Office Chairs"
-                    subtitle="Green Soul, Cell Bell & more"
-                    price="From ₹2,999"
-                    image="🪑"
-                />
-
-                {/* Fashion Top Deals */}
+                <Banner banners={banners} autoSlide={true} interval={5000} />                {/* Fashion Top Deals */}
                 <section>
                     <SectionHeader title="Fashion's Top Deals" href="/deals/fashion" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,13 +86,7 @@ export default function HomePage() {
                 </section>
 
                 {/* Flight Bookings Banner */}
-                <Banner
-                    title="Flight bookings"
-                    subtitle="Lowest fares guaranteed"
-                    price="From ₹1,499*"
-                    bgColor="bg-gradient-to-r from-orange-500 to-yellow-500"
-                    image="✈️"
-                />
+                <Banner banners={[{ title: "Flight bookings", subtitle: "Lowest fares guaranteed", price: "From ₹1,499*", bgColor: "bg-gradient-to-r from-orange-500 to-yellow-500", image: "✈️" }]} autoSlide={false} />
 
 
             </div>
