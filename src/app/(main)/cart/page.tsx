@@ -9,9 +9,9 @@ import Link from "next/link";
 export default function CartPage() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [items, setItems] = useState([
-        { id: "1", title: "Gaming Monitor 144Hz", price: 12999, image: "🖥️", quantity: 1 },
-        { id: "2", title: "Mechanical Keyboard", price: 3499, image: "⌨️", quantity: 2 },
-        { id: "3", title: "Wireless Mouse", price: 899, image: "🖱️", quantity: 1 },
+        { id: "1", title: "Gaming Monitor 144Hz", price: 100, image: "🖥️", quantity: 1 },
+        { id: "2", title: "Mechanical Keyboard", price: 200, image: "⌨️", quantity: 2 },
+        { id: "3", title: "Wireless Mouse", price: 10, image: "🖱️", quantity: 1 },
     ]);
 
     const handleQuantityChange = (id: string, qty: number) => {

@@ -1,3 +1,4 @@
+
 import Footer from "./fotter";
 import Header from "./header";
 
@@ -11,6 +12,7 @@ export default function MainLayout({
             <body
             >
                 <Header></Header>
+
                 {children}
                 <Footer></Footer>
             </body>
