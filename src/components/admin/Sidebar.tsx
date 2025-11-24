@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React from "react";
 import {
@@ -51,7 +52,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     {/* Logo */}
                     <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
                         <Link href="/admin/dashboard" className="flex items-center gap-2">
-                            <span className="text-2xl">🛒</span>
+                            <div className="relative w-8 h-8">
+                                <Image
+                                    src="https://knex.com.bd/wp-content/uploads/2025/07/cropped-3d-png.png"
+                                    alt="KNEX Logo"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">KNEX</h3>
                                 <p className="text-xs text-gray-500">Admin Panel</p>

@@ -6,8 +6,9 @@ import React, { useState, useEffect } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import { adminData } from "@/lib/adminData";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminEditProduct() {
     const params = useParams();
@@ -15,11 +16,15 @@ export default function AdminEditProduct() {
     const id = params.id as string;
     const [product, setProduct] = useState<any>(null);
     const [saving, setSaving] = useState(false);
+    const [mainImage, setMainImage] = useState<string>("");
+    const [gallery, setGallery] = useState<string[]>([]);
 
     useEffect(() => {
         const p = adminData.getProduct(id);
         if (p) {
             setProduct(p);
+            setMainImage(p.image || "");
+            setGallery(p.gallery || []);
         } else {
             // New product
             setProduct({
@@ -119,6 +124,83 @@ export default function AdminEditProduct() {
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 placeholder="e.g., DELL"
                             />
+                        </div>
+
+                        {/* Main Product Image */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Main Product Image</label>
+                            <div className="flex items-center gap-4">
+                                {mainImage && (
+                                    <div className="relative w-24 h-24 border border-gray-200 rounded-lg overflow-hidden">
+                                        <Image src={mainImage} alt="Main" fill className="object-cover" />
+                                    </div>
+                                )}
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        value={mainImage}
+                                        onChange={(e) => setMainImage(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        placeholder="Enter image URL or upload"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Enter image URL or use emoji</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Image Gallery */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Image Gallery</label>
+                            <div className="space-y-3">
+                                {/* Display existing gallery images */}
+                                {gallery.length > 0 && (
+                                    <div className="flex flex-wrap gap-3">
+                                        {gallery.map((img, idx) => (
+                                            <div key={idx} className="relative w-24 h-24 border border-gray-200 rounded-lg overflow-hidden group">
+                                                <Image src={img} alt={`Gallery ${idx + 1}`} fill className="object-cover" />
+                                                <button
+                                                    onClick={() => setGallery(gallery.filter((_, i) => i !== idx))}
+                                                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {/* Add new image */}
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter image URL"
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                                const input = e.target as HTMLInputElement;
+                                                if (input.value.trim()) {
+                                                    setGallery([...gallery, input.value.trim()]);
+                                                    input.value = '';
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2"
+                                        onClick={(e) => {
+                                            const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                                            if (input?.value.trim()) {
+                                                setGallery([...gallery, input.value.trim()]);
+                                                input.value = '';
+                                            }
+                                        }}
+                                    >
+                                        <Upload className="w-4 h-4" />
+                                        Add
+                                    </button>
+                                </div>
+                                <p className="text-xs text-gray-500">Press Enter or click Add to include image URL</p>
+                            </div>
                         </div>
 
                         <div className="md:col-span-2">

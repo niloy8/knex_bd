@@ -10,11 +10,18 @@ import Link from "next/link";
 
 export default function AdminProducts() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("All Categories");
+    const [statusFilter, setStatusFilter] = useState("All Status");
     const products = adminData.getProducts();
 
-    const filteredProducts = products.filter(p =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredProducts = products.filter(p => {
+        const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = categoryFilter === "All Categories" || p.category === categoryFilter;
+        const matchesStatus = statusFilter === "All Status" ||
+            (statusFilter === "In Stock" && p.assured) ||
+            (statusFilter === "Out of Stock" && !p.assured);
+        return matchesSearch && matchesCategory && matchesStatus;
+    });
 
     return (
         <ProtectedAdmin>
@@ -47,13 +54,21 @@ export default function AdminProducts() {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                             />
                         </div>
-                        <select className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        >
                             <option>All Categories</option>
                             <option>Electronics</option>
                             <option>Fashion</option>
                             <option>Home & Lifestyle</option>
                         </select>
-                        <select className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        >
                             <option>All Status</option>
                             <option>In Stock</option>
                             <option>Out of Stock</option>

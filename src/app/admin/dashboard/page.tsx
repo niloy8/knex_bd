@@ -12,7 +12,7 @@ import {
     revenueChartData,
     adminData
 } from "@/lib/adminData";
-import { DollarSign, ShoppingBag, Users, TrendingUp, MoreVertical } from "lucide-react";
+import { Banknote, ShoppingBag, Users, TrendingUp, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
                         value={`Tk ${analyticsData.totalRevenue.toLocaleString()}`}
                         change={analyticsData.revenueChange}
                         trend="up"
-                        icon={<DollarSign className="w-6 h-6 text-blue-600" />}
+                        icon={<Banknote className="w-6 h-6 text-blue-600" />}
                     />
                     <StatCard
                         title="Total Sales"
