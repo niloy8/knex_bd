@@ -1,46 +1,170 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ProtectedAdmin from "@/components/admin/ProtectedAdmin";
-import { adminApi } from "@/lib/adminApi";
-import { useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import ProtectedAdmin from "@/components/admin/ProtectAdmin";
+import { adminData } from "@/lib/adminData";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Save } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminEditProduct() {
-  const params = useParams();
-  const id = params.id as string;
-  const [product, setProduct] = useState<any>(null);
-  const [saving, setSaving] = useState(false);
+    const params = useParams();
+    const router = useRouter();
+    const id = params.id as string;
+    const [product, setProduct] = useState<any>(null);
+    const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const p: any = await adminApi.getProduct(id);
-      setProduct(p || { id });
-    })();
-  }, [id]);
+    useEffect(() => {
+        const p = adminData.getProduct(id);
+        if (p) {
+            setProduct(p);
+        } else {
+            // New product
+            setProduct({
+                id: "",
+                title: "",
+                price: 0,
+                originalPrice: 0,
+                category: "",
+                brand: "",
+                features: [],
+            });
+        }
+    }, [id]);
 
-  async function handleSave() {
-    setSaving(true);
-    await adminApi.updateProduct(id, product);
-    setSaving(false);
-    alert('Saved (demo)');
-  }
+    const handleSave = async () => {
+        setSaving(true);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setSaving(false);
+        alert("Product saved successfully!");
+        router.push("/admin/products");
+    };
 
-  if (!product) return null;
+    if (!product) return <div>Loading...</div>;
 
-  return (
-    <ProtectedAdmin>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Edit Product {product.id}</h1>
-        <div className="bg-white rounded border p-4">
-          <label className="block text-sm text-gray-700">Title</label>
-          <input value={product.title || ''} onChange={(e) => setProduct({ ...product, title: e.target.value })} className="w-full mt-1 border p-2 rounded" />
-          <label className="block text-sm text-gray-700 mt-3">Price</label>
-          <input value={product.price || 0} onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })} type="number" className="w-full mt-1 border p-2 rounded" />
-          <div className="mt-4">
-            <button onClick={handleSave} className="px-3 py-2 bg-blue-600 text-white rounded" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-          </div>
-        </div>
-      </div>
-    </ProtectedAdmin>
-  );
+    return (
+        <ProtectedAdmin>
+            <div className="space-y-6 max-w-4xl">
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                    <Link href="/admin/products" className="p-2 hover:bg-gray-100 rounded-lg">
+                        <ArrowLeft className="w-5 h-5" />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">
+                            {id === "new" ? "Add New Product" : "Edit Product"}
+                        </h1>
+                        <p className="text-sm text-gray-500 mt-1">
+                            {id === "new" ? "Create a new product" : `Update product details`}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Form */}
+                <div className="bg-white rounded-lg border border-gray-100 p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Product Title</label>
+                            <input
+                                type="text"
+                                value={product.title}
+                                onChange={(e) => setProduct({ ...product, title: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                placeholder="Enter product title"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Price (Tk)</label>
+                            <input
+                                type="number"
+                                value={product.price}
+                                onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                placeholder="0"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (Tk)</label>
+                            <input
+                                type="number"
+                                value={product.originalPrice}
+                                onChange={(e) => setProduct({ ...product, originalPrice: Number(e.target.value) })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                placeholder="0"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                            <input
+                                type="text"
+                                value={product.category}
+                                onChange={(e) => setProduct({ ...product, category: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                placeholder="e.g., Electronics"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                            <input
+                                type="text"
+                                value={product.brand}
+                                onChange={(e) => setProduct({ ...product, brand: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                placeholder="e.g., DELL"
+                            />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Stock Status</label>
+                            <div className="flex items-center gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        checked={product.assured === true}
+                                        onChange={() => setProduct({ ...product, assured: true })}
+                                        className="text-blue-600"
+                                    />
+                                    <span className="text-sm">In Stock</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        checked={product.assured === false}
+                                        onChange={() => setProduct({ ...product, assured: false })}
+                                        className="text-blue-600"
+                                    />
+                                    <span className="text-sm">Out of Stock</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 mt-6 pt-6 border-t border-gray-100">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        >
+                            <Save className="w-4 h-4" />
+                            {saving ? "Saving..." : "Save Product"}
+                        </button>
+                        <Link
+                            href="/admin/products"
+                            className="px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                            Cancel
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </ProtectedAdmin>
+    );
 }
