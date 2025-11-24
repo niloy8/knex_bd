@@ -44,7 +44,7 @@ export default function HomePage() {
         <div className="min-h-screen bg-gray-50">
             {/* Categories */}
             <section className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-3">
                     <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4">
                         {categories.map((category) => (
                             <CategoryCard key={category.name} {...category} />

@@ -9,3 +9,21 @@
     transform: scaleX(1);
   }
 }
+
+/* Make interactive elements show pointer cursor by default */
+button,
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"],
+label[for] {
+  cursor: pointer;
+}
+
+/* Disabled controls should indicate not-allowed */
+button:disabled,
+button[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
