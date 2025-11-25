@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import StatCard from "@/components/admin/StatCard";
 import SimpleChart from "@/components/admin/SimpleChart";
@@ -16,6 +16,7 @@ import { Banknote, ShoppingBag, Users, TrendingUp, MoreVertical } from "lucide-r
 import Link from "next/link";
 
 export default function AdminDashboard() {
+    const [dateFilter, setDateFilter] = useState("Last 7 days");
     const orders = adminData.getOrders();
     const activities = adminData.getActivities();
     const topCategories = analyticsData.topCategories;
@@ -41,14 +42,15 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-500 mt-1">Welcome back! Here is what happening today.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <select className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                        <select 
+                            value={dateFilter}
+                            onChange={(e) => setDateFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        >
                             <option>Last 7 days</option>
                             <option>Last 30 days</option>
                             <option>Last 90 days</option>
                         </select>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                            + Add New
-                        </button>
                     </div>
                 </div>
 
@@ -91,11 +93,11 @@ export default function AdminDashboard() {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900">Revenue Analytics</h3>
-                                <p className="text-sm text-gray-500">Last 7 days performance</p>
+                                <p className="text-sm text-gray-500">{dateFilter} performance</p>
                             </div>
-                            <button className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                                Last 7 Days
-                            </button>
+                            <span className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg">
+                                {dateFilter}
+                            </span>
                         </div>
                         <SimpleChart data={revenueChartData} color="#3b82f6" />
                     </div>
