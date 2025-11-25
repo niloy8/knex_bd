@@ -69,7 +69,7 @@ export default function WishlistPage() {
 
             <div className="max-w-7xl mx-auto px-4 mt-2.5">
                 {/* Header with Heart Icon */}
-                <div className="flex flex-col items-center mb-8">
+                <div className="flex flex-col items-center mb-3">
                     <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-blue-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                         <Heart size={32} className="fill-white stroke-white" />
                     </div>
@@ -143,7 +143,7 @@ export default function WishlistPage() {
                                                 onClick={() => addToCart(item.id)}
                                                 disabled={!item.inStock}
                                                 className={`flex-1 md:flex-initial px-6 py-2 rounded-lg font-medium transition-all cursor-pointer ${item.inStock
-                                                    ? "bg-gradient-to-r from-green-400 to-green-600 text-white hover:from-teal-600 hover:to-teal-700 shadow-md hover:shadow-lg"
+                                                    ? "bg-blue-600 text-white  hover:bg-green-700 shadow-md hover:shadow-lg"
                                                     : "bg-gray-300 text-blue-500 cursor-not-allowed"
                                                     }`}
                                             >
