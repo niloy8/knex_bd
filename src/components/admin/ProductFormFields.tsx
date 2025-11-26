@@ -1,4 +1,5 @@
 import { FileText, Tag, X } from "lucide-react";
+import RichTextEditor from "./RichTextEditor";
 
 interface Product {
     id?: string;
@@ -43,11 +44,9 @@ export default function ProductFormFields({ product, setProduct, description, se
                     <FileText className="w-4 h-4" />
                     Product Description
                 </label>
-                <textarea
+                <RichTextEditor
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                    onChange={setDescription}
                     placeholder="Enter detailed product description..."
                 />
             </div>
