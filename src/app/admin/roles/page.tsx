@@ -6,9 +6,7 @@ import { Plus, Shield, Users, Edit, Trash2, X, Save } from "lucide-react";
 
 const mockRoles = [
     { id: "1", name: "Super Admin", users: 2, permissions: ["all"] },
-    { id: "2", name: "Admin", users: 5, permissions: ["products", "orders", "customers"] },
-    { id: "3", name: "Editor", users: 8, permissions: ["products", "orders"] },
-    { id: "4", name: "Support", users: 12, permissions: ["orders", "customers"] },
+
 ];
 
 const allPermissions = ["dashboard", "products", "orders", "customers", "settings"];
