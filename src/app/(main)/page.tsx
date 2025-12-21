@@ -22,12 +22,7 @@ export default function HomePage() {
         { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/flights", badge: "NEW" },
     ];
 
-    const fashionDeals = [
-        { title: "Sports Shoes", price: "Min. 70% Off", image: "👟", href: "/products?category=sports-shoes" },
-        { title: "Slippers", price: "Min. 70% Off", image: "🩴", href: "/products?category=slippers" },
-        { title: "Smart Watch", price: "From Tk 999", image: "⌚", href: "/products?category=smart-watch" },
-        { title: "Backpacks", price: "Min. 60% Off", image: "🎒", href: "/products?category=backpacks" },
-    ];
+
 
     const topDeals = [
         { title: "Projectors", price: "From Tk 6990", image: "📽️", href: "/products?category=projectors" },

@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { signInWithEmail, isAdmin } from "@/lib/authHelper";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
 import Image from "next/image";
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 export default function AdminLoginPage() {
-    const [email, setEmail] = useState("admin@knex.bd");
-    const [password, setPassword] = useState("KnexAdmin@2025");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -19,13 +20,16 @@ export default function AdminLoginPage() {
         setError(null);
 
         try {
-            const user = await signInWithEmail(email, password);
-            if (!isAdmin(user)) {
-                const { logout } = await import("@/lib/authHelper");
-                await logout();
-                setError("Access denied. Admin privileges required.");
-                return;
-            }
+            const res = await fetch(`${API}/admin/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Login failed");
+
+            localStorage.setItem("adminToken", data.token);
+            localStorage.setItem("adminUser", JSON.stringify(data.admin));
             router.push("/admin/dashboard");
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Login failed");
@@ -35,7 +39,7 @@ export default function AdminLoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-green-50 p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
@@ -94,23 +98,10 @@ export default function AdminLoginPage() {
                                 {error}
                             </div>
                         )}
-
-                        {/* Remember & Forgot */}
-                        <div className="flex items-center justify-between text-sm">
-                            <label className="flex items-center gap-2">
-                                <input type="checkbox" className="rounded border-gray-300" />
-                                <span className="text-gray-600">Remember me</span>
-                            </label>
-                            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
-                                Forgot password?
-                            </a>
-                        </div>
-
-                        {/* Submit button */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
+                            className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -125,13 +116,6 @@ export default function AdminLoginPage() {
                             )}
                         </button>
                     </form>
-
-                    {/* Demo credentials info */}
-                    <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <p className="text-xs font-medium text-blue-900 mb-2">Demo Credentials:</p>
-                        <p className="text-xs text-blue-700">Email: <code className="bg-white px-1 rounded">admin@knex.bd</code></p>
-                        <p className="text-xs text-blue-700">Password: <code className="bg-white px-1 rounded">KnexAdmin@2025</code></p>
-                    </div>
                 </div>
 
                 {/* Footer */}

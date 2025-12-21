@@ -1,254 +1,169 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
-import { Plus, Shield, Users, Edit, Trash2, X, Save } from "lucide-react";
+import { Plus, Shield, Edit, Trash2, X, Save, Mail, Lock, User } from "lucide-react";
 
-const mockRoles = [
-    { id: "1", name: "Super Admin", users: 2, permissions: ["all"] },
-
-];
-
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const allPermissions = ["dashboard", "products", "orders", "customers", "settings"];
 
+type Admin = { id: number; email: string; name: string; role: string; permissions: string[] };
+
 export default function AdminRoles() {
-    const [roles, setRoles] = useState(mockRoles);
-    const [showModal, setShowModal] = useState(false);
-    const [editingRole, setEditingRole] = useState<typeof mockRoles[0] | null>(null);
-    const [roleName, setRoleName] = useState("");
-    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-
-    const handleAddRole = () => {
-        setEditingRole(null);
-        setRoleName("");
-        setSelectedPermissions([]);
-        setShowModal(true);
-    };
-
-    const handleEditRole = (role: typeof mockRoles[0]) => {
-        setEditingRole(role);
-        setRoleName(role.name);
-        setSelectedPermissions(role.permissions);
-        setShowModal(true);
-    };
-
-    const togglePermission = (permission: string) => {
-        setSelectedPermissions(prev =>
-            prev.includes(permission)
-                ? prev.filter(p => p !== permission)
-                : [...prev, permission]
-        );
-    };
-
-    const handleSaveRole = () => {
-        if (!roleName.trim()) return;
-
-        if (editingRole) {
-            setRoles(roles.map(r => r.id === editingRole.id ? { ...r, name: roleName, permissions: selectedPermissions } : r));
-        } else {
-            const newRole = {
-                id: String(roles.length + 1),
-                name: roleName,
-                users: 0,
-                permissions: selectedPermissions
-            };
-            setRoles([...roles, newRole]);
+    const [admins, setAdmins] = useState<Admin[]>([]);
+    const [currentAdmin] = useState<Admin | null>(() => {
+        if (typeof window !== "undefined") {
+            const user = localStorage.getItem("adminUser");
+            return user ? JSON.parse(user) : null;
         }
-        setShowModal(false);
-        setRoleName("");
-        setSelectedPermissions([]);
+        return null;
+    });
+    const [showModal, setShowModal] = useState(false);
+    const [editing, setEditing] = useState<Admin | null>(null);
+    const [form, setForm] = useState({ email: "", password: "", name: "", role: "admin", permissions: [] as string[] });
+    const [loading, setLoading] = useState(false);
+
+    const getHeaders = () => ({
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`
+    });
+
+    const fetchAdmins = async () => {
+        try {
+            const res = await fetch(`${API}/admin`, { headers: getHeaders() });
+            if (res.ok) setAdmins(await res.json());
+        } catch (e) { console.error(e); }
     };
 
-    const handleDeleteRole = (roleId: string) => {
-        setRoles(roles.filter(r => r.id !== roleId));
+    useEffect(() => {
+        fetchAdmins();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleSave = async () => {
+        if (!form.email || (!editing && !form.password)) return;
+        setLoading(true);
+        try {
+            const url = editing ? `${API}/admin/${editing.id}` : `${API}/admin`;
+            const body = editing ? { name: form.name, role: form.role, permissions: form.permissions, ...(form.password && { password: form.password }) } : form;
+            const res = await fetch(url, { method: editing ? "PUT" : "POST", headers: getHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { fetchAdmins(); setShowModal(false); }
+        } catch (e) { console.error(e); }
+        setLoading(false);
     };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm("Delete this admin?")) return;
+        await fetch(`${API}/admin/${id}`, { method: "DELETE", headers: getHeaders() });
+        fetchAdmins();
+    };
+
+    const openModal = (admin?: Admin) => {
+        setEditing(admin || null);
+        setForm(admin ? { email: admin.email, password: "", name: admin.name || "", role: admin.role, permissions: admin.permissions } : { email: "", password: "", name: "", role: "admin", permissions: [] });
+        setShowModal(true);
+    };
+
+    const isSuperAdmin = currentAdmin?.role === "superadmin";
 
     return (
         <ProtectedAdmin>
             <div className="space-y-6">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Roles & Permissions</h1>
-                        <p className="text-sm text-gray-500 mt-1">Manage user roles and access controls</p>
+                        <h1 className="text-2xl font-bold text-gray-900">Admin Users</h1>
+                        <p className="text-sm text-gray-500 mt-1">Manage admin accounts and permissions</p>
                     </div>
-                    <button
-                        onClick={handleAddRole}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Add Role
-                    </button>
+                    {isSuperAdmin && (
+                        <button onClick={() => openModal()} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                            <Plus className="w-4 h-4" /> Add Admin
+                        </button>
+                    )}
                 </div>
 
-                {/* Roles Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {roles.map((role) => (
-                        <div key={role.id} className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                    {admins.map((admin) => (
+                        <div key={admin.id} className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                                     <Shield className="w-6 h-6 text-blue-600" />
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        onClick={() => handleEditRole(role)}
-                                        className="p-1.5 hover:bg-blue-50 text-blue-600 rounded transition-colors"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteRole(role.id)}
-                                        className="p-1.5 hover:bg-red-50 text-red-600 rounded transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
+                                {isSuperAdmin && admin.role !== "superadmin" && (
+                                    <div className="flex items-center gap-1">
+                                        <button onClick={() => openModal(admin)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded"><Edit className="w-4 h-4" /></button>
+                                        <button onClick={() => handleDelete(admin.id)} className="p-1.5 hover:bg-red-50 text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+                                    </div>
+                                )}
                             </div>
-
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{role.name}</h3>
-
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                                <Users className="w-4 h-4" />
-                                <span>{role.users} users</span>
-                            </div>
-
-                            <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{admin.name || admin.email}</h3>
+                            <p className="text-sm text-gray-500 mb-2">{admin.email}</p>
+                            <span className={`inline-block px-2 py-1 text-xs rounded-full font-medium ${admin.role === "superadmin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{admin.role}</span>
+                            <div className="mt-4">
                                 <p className="text-xs text-gray-500 mb-2">Permissions:</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {role.permissions.map((perm, i) => (
-                                        <span
-                                            key={i}
-                                            className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium"
-                                        >
-                                            {perm}
-                                        </span>
-                                    ))}
+                                <div className="flex flex-wrap gap-1">
+                                    {admin.permissions.map((p, i) => <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{p}</span>)}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Permissions Table */}
-                <div className="bg-white rounded-lg border border-gray-100 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Matrix</h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Module</th>
-                                    {roles.map(role => (
-                                        <th key={role.id} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            {role.name}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {["Dashboard", "Products", "Orders", "Customers", "Settings"].map((module) => (
-                                    <tr key={module}>
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{module}</td>
-                                        {roles.map(role => (
-                                            <td key={role.id} className="px-4 py-3 text-center">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={role.permissions.includes("all") || role.permissions.includes(module.toLowerCase())}
-                                                    className="w-4 h-4 text-blue-600 rounded"
-                                                    readOnly
-                                                />
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Add/Edit Modal */}
                 {showModal && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto">
-                        <div className="bg-white rounded-lg max-w-2xl w-full p-6 mx-auto mt-8 mb-8">
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="bg-white rounded-lg max-w-md w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between mb-6">
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">
-                                        {editingRole ? "Edit Role" : "Add New Role"}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {editingRole ? "Update role details and permissions" : "Create a new role with permissions"}
-                                    </p>
-                                </div>
-                                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
+                                <h3 className="text-xl font-bold text-gray-900">{editing ? "Edit Admin" : "Add Admin"}</h3>
+                                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
                             </div>
-
-                            <div className="space-y-6">
-                                {/* Role Name */}
+                            <div className="space-y-4">
+                                {!editing && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin@example.com" />
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
-                                    <input
-                                        type="text"
-                                        value={roleName}
-                                        onChange={(e) => setRoleName(e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                        placeholder="e.g., Manager, Moderator, etc."
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{editing ? "New Password (optional)" : "Password"}</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
+                                    </div>
                                 </div>
-
-                                {/* Permissions */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">Permissions</label>
-                                    <div className="space-y-3 bg-gray-50 rounded-lg p-4">
-                                        {allPermissions.map((permission) => (
-                                            <label key={permission} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedPermissions.includes(permission) || selectedPermissions.includes("all")}
-                                                    onChange={() => togglePermission(permission)}
-                                                    disabled={selectedPermissions.includes("all")}
-                                                    className="w-5 h-5 text-blue-600 rounded"
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-gray-900 capitalize">{permission}</p>
-                                                    <p className="text-xs text-gray-500">Access to {permission} management</p>
-                                                </div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Admin Name" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                                    <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="admin">Admin</option>
+                                        <option value="manager">Manager</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+                                    <div className="space-y-2">
+                                        {allPermissions.map(p => (
+                                            <label key={p} className="flex items-center gap-2 p-2 bg-gray-50 rounded cursor-pointer hover:bg-gray-100">
+                                                <input type="checkbox" checked={form.permissions.includes(p) || form.permissions.includes("all")} onChange={() => setForm({ ...form, permissions: form.permissions.includes(p) ? form.permissions.filter(x => x !== p) : [...form.permissions, p] })} disabled={form.permissions.includes("all")} className="w-4 h-4 text-blue-600 rounded" />
+                                                <span className="capitalize text-sm">{p}</span>
                                             </label>
                                         ))}
-                                        <label className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedPermissions.includes("all")}
-                                                onChange={() => setSelectedPermissions(prev =>
-                                                    prev.includes("all") ? [] : ["all"]
-                                                )}
-                                                className="w-5 h-5 text-blue-600 rounded"
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-bold text-blue-900">All Permissions</p>
-                                                <p className="text-xs text-blue-700">Grant full access to all modules</p>
-                                            </div>
+                                        <label className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded cursor-pointer">
+                                            <input type="checkbox" checked={form.permissions.includes("all")} onChange={() => setForm({ ...form, permissions: form.permissions.includes("all") ? [] : ["all"] })} className="w-4 h-4 text-blue-600 rounded" />
+                                            <span className="font-medium text-blue-700 text-sm">All Permissions</span>
                                         </label>
                                     </div>
                                 </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                                    <button
-                                        onClick={handleSaveRole}
-                                        disabled={!roleName.trim()}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <Save className="w-4 h-4" />
-                                        {editingRole ? "Update Role" : "Create Role"}
-                                    </button>
-                                    <button
-                                        onClick={() => setShowModal(false)}
-                                        className="px-6 py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
+                                <button onClick={handleSave} disabled={loading || !form.email || (!editing && !form.password)} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
+                                    <Save className="w-4 h-4" /> {loading ? "Saving..." : editing ? "Update" : "Create"}
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -27,7 +27,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                 </button>
 
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 relative flex-shrink-0">
+                    <div className="w-12 h-12 relative shrink-0">
                         <Image src="https://knex.com.bd/wp-content/uploads/2025/07/3d-png.png" alt="KNEX" fill className="object-contain" />
                     </div>
                     <div>
@@ -41,14 +41,14 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     <div className="grid md:grid-cols-2 gap-3">
                         <label className="block">
                             <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-blue-400 transition">
-                                <User size={18} className="text-blue-500 flex-shrink-0" />
+                                <User size={18} className="text-blue-500 shrink-0" />
                                 <input type="text" placeholder="Full Name" required className="w-full bg-transparent outline-none text-sm" />
                             </div>
                         </label>
 
                         <label className="block">
                             <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-green-400 transition">
-                                <Phone size={18} className="text-green-500 flex-shrink-0" />
+                                <Phone size={18} className="text-green-500 shrink-0" />
                                 <input type="tel" placeholder="Phone Number" required className="w-full bg-transparent outline-none text-sm" />
                             </div>
                         </label>
@@ -57,7 +57,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     {/* Email */}
                     <label className="block">
                         <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-yellow-400 transition">
-                            <Mail size={18} className="text-yellow-600 flex-shrink-0" />
+                            <Mail size={18} className="text-yellow-600 shrink-0" />
                             <input type="email" placeholder="Email Address" required className="w-full bg-transparent outline-none text-sm" />
                         </div>
                     </label>
@@ -65,7 +65,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     {/* Address */}
                     <label className="block">
                         <div className="flex items-start gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-blue-400 transition">
-                            <MapPin size={18} className="text-blue-500 mt-1 flex-shrink-0" />
+                            <MapPin size={18} className="text-blue-500 mt-1 shrink-0" />
                             <textarea placeholder="Delivery Address" required className="w-full bg-transparent outline-none text-sm resize-none" rows={2} />
                         </div>
                     </label>
@@ -75,14 +75,14 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                         <p className="text-sm font-semibold text-gray-700 mb-3">Delivery Location</p>
                         <div className="grid grid-cols-2 gap-3">
                             <label className="flex items-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer hover:bg-blue-50 transition" style={{ borderColor: location === "inside" ? "#3b82f6" : "#e5e7eb" }}>
-                                <input type="radio" name="location" checked={location === "inside"} onChange={() => setLocation("inside")} className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <input type="radio" name="location" checked={location === "inside"} onChange={() => setLocation("inside")} className="w-4 h-4 text-blue-600 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium text-sm">Inside Dhaka</p>
                                     <p className="text-xs text-gray-500">Delivery: Tk 80</p>
                                 </div>
                             </label>
                             <label className="flex items-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer hover:bg-green-50 transition" style={{ borderColor: location === "outside" ? "#22c55e" : "#e5e7eb" }}>
-                                <input type="radio" name="location" checked={location === "outside"} onChange={() => setLocation("outside")} className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                <input type="radio" name="location" checked={location === "outside"} onChange={() => setLocation("outside")} className="w-4 h-4 text-green-600 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium text-sm">Outside Dhaka</p>
                                     <p className="text-xs text-gray-500">Delivery: Tk 150</p>
@@ -121,7 +121,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     </div>
 
                     {/* Order Summary */}
-                    <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-5 border border-blue-100 mt-2">
+                    <div className="bg-linear-to-r from-blue-50 to-green-50 rounded-xl p-5 border border-blue-100 mt-2">
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-sm text-gray-600">Subtotal</span>
                             <span className="font-medium text-sm">Tk {total.toLocaleString()}</span>
@@ -136,7 +136,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white p-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition cursor-pointer mt-2">
+                    <button type="submit" className="w-full bg-linear-to-r from-blue-600 to-green-600 text-white p-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition cursor-pointer mt-2">
                         Place Order
                     </button>
                 </form>

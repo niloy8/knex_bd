@@ -42,7 +42,7 @@ export default function AccountPage() {
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold">
+                                <div className="w-20 h-20 rounded-full bg-linear-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold">
                                     {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
@@ -111,10 +111,10 @@ export default function AccountPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center py-12 px-4">
+        <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-green-50 flex items-center justify-center py-12 px-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-20 h-20 bg-linear-to-br from-blue-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <User className="w-10 h-10 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to KNEX</h1>

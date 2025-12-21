@@ -36,7 +36,7 @@ export default function Banner({ banners, autoSlide = true, interval = 1500 }: B
         <div className="relative overflow-hidden rounded-2xl group">
             <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${current * 100}%)` }}>
                 {banners.map((banner, idx) => (
-                    <div key={idx} className={`cursor-pointer min-w-full ${banner.bgColor || "bg-gradient-to-r from-blue-600 to-indigo-600"} p-8 text-white relative overflow-hidden min-h-[200px] flex items-center`}>
+                    <div key={idx} className={`cursor-pointer min-w-full ${banner.bgColor || "bg-linear-to-r from-blue-600 to-indigo-600"} p-8 text-white relative overflow-hidden min-h-[200px] flex items-center`}>
                         <div className="relative z-10 max-w-md">
                             <h2 className="text-3xl sm:text-4xl font-bold mb-2">{banner.title}</h2>
                             <p className="text-lg mb-4 text-white/90">{banner.subtitle}</p>
