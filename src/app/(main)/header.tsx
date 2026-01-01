@@ -173,37 +173,29 @@ export default function Header() {
                     </button>
 
                     {/* Mobile Search Suggestions */}
-                    {showSuggestions && totalResults > 0 && (
+                    {showSuggestions && (
                         <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 max-h-80 overflow-y-auto z-50">
-                            {categoryResults.length > 0 && (
-                                <div className="p-2 border-b border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-500 px-2 py-1">CATEGORIES</p>
-                                    {categoryResults.map((category, idx) => (
-                                        <Link
-                                            key={idx}
-                                            href={`/products?category=${category}`}
-                                            onClick={() => setShowSuggestions(false)}
-                                            className="flex items-center gap-2 px-2 py-2 hover:bg-blue-50 rounded-lg"
-                                        >
-                                            <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
-                                                {getCategoryIcon(category)}
-                                            </div>
-                                            <span className="text-sm font-medium capitalize">{category.replace('-', ' ')}</span>
-                                        </Link>
-                                    ))}
+                            {searchLoading ? (
+                                <div className="flex items-center justify-center py-6">
+                                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                                 </div>
-                            )}
-                            {suggestions.length > 0 && (
+                            ) : suggestions.length > 0 ? (
                                 <div className="p-2">
                                     <p className="text-xs font-semibold text-gray-500 px-2 py-1">PRODUCTS</p>
                                     {suggestions.map((product) => (
                                         <Link
                                             key={product.id}
-                                            href={product.href}
+                                            href={`/products/${product.slug || product.id}`}
                                             onClick={() => setShowSuggestions(false)}
                                             className="flex items-center gap-2 px-2 py-2 hover:bg-blue-50 rounded-lg"
                                         >
-                                            <span className="text-xl">{product.image}</span>
+                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                                {product.image ? (
+                                                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="text-xl">📦</span>
+                                                )}
+                                            </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-medium line-clamp-1">{product.title}</p>
                                                 <p className="text-xs text-blue-600 font-bold">Tk {product.price.toLocaleString()}</p>
@@ -211,7 +203,11 @@ export default function Header() {
                                         </Link>
                                     ))}
                                 </div>
-                            )}
+                            ) : searchQuery.trim() ? (
+                                <div className="p-6 text-center">
+                                    <p className="text-xs text-gray-500">No products found</p>
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>
