@@ -13,7 +13,7 @@ export default function CategoryCard({ name, icon, href, badge }: CategoryCardPr
         <Link href={href} className="flex flex-col items-center group cursor-pointer">
             <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-32 lg:h-32 p-3 transition-transform group-hover:scale-105 ">
                 {badge && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                    <span className="absolute -top-2 -right-2 bg-linear-to-r from-orange-500 to-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
                         {badge}
                     </span>
                 )}
