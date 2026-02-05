@@ -53,7 +53,7 @@ export default function AdminNewProduct() {
     const [productType, setProductType] = useState<string>("simple");
     const [showPreview, setShowPreview] = useState(false);
     const [swatchType, setSwatchType] = useState<"color" | "image">("color");
-    const [imageSwatch, setImageSwatch] = useState<{ name: string; image: string }[]>([]);
+    const [imageSwatch, setImageSwatch] = useState<{ name: string; image: string; images: string[] }[]>([]);
     const [displayOptions, setDisplayOptions] = useState<string[]>([]);
     const [description, setDescription] = useState<string>("");
     const [tags, setTags] = useState<string[]>([]);
@@ -70,20 +70,45 @@ export default function AdminNewProduct() {
     const fetchCategories = useCallback(async () => {
         try {
             const res = await fetch(`${API_URL}/categories`);
+            if (!res.ok) {
+                console.error("Failed to fetch categories");
+                setCategories([]);
+                return;
+            }
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("API returned non-JSON response");
+                setCategories([]);
+                return;
+            }
             const data = await res.json();
-            setCategories(data || []);
+            console.log("Categories fetched:", data);
+            setCategories(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching categories:", error);
+            setCategories([]);
         }
     }, []);
 
     const fetchBrands = useCallback(async () => {
         try {
             const res = await fetch(`${API_URL}/brands`);
+            if (!res.ok) {
+                console.error("Failed to fetch brands");
+                setBrands([]);
+                return;
+            }
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("API returned non-JSON response");
+                setBrands([]);
+                return;
+            }
             const data = await res.json();
-            setBrands(data || []);
+            setBrands(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching brands:", error);
+            setBrands([]);
         }
     }, []);
 
@@ -124,12 +149,16 @@ export default function AdminNewProduct() {
                 inStock: product.inStock,
                 stockQuantity: Number(product.stockQuantity) || 0,
                 sku: product.sku,
+                productType,
+                swatchType: productType === "variable" ? swatchType : null,
                 ...(productType === "variable" && {
                     ...(swatchType === "color" ? { colors } : { imageSwatch }),
                     sizes,
                     displayOptions,
                 }),
             };
+
+            console.log("Sending product data:", { productType, swatchType, imageSwatch, productData });
 
             const res = await fetch(`${API_URL}/products`, {
                 method: "POST",

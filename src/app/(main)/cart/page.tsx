@@ -10,8 +10,8 @@ import Link from "next/link";
 export default function CartPage() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [items, setItems] = useState([
-        { id: "1", title: "Gaming Monitor 144Hz", price: 100, image: "🖥️", quantity: 1 },
-        { id: "2", title: "Mechanical Keyboard", price: 200, image: "⌨️", quantity: 2 },
+        { id: "1", title: "Gaming Monitor 144Hz", price: 100, image: "/products/monitor.png", quantity: 1 },
+        { id: "2", title: "Mechanical Keyboard", price: 200, image: "/products/keyboard.png", quantity: 2 },
 
     ]);
 
@@ -26,7 +26,7 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50 px-4">
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-50 px-4">
                 <div className="text-center">
                     <ShoppingCart size={60} className="sm:w-20 sm:h-20 mx-auto text-gray-300 mb-4" />
                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
@@ -43,7 +43,7 @@ export default function CartPage() {
         <>
             <CategoryNav />
             <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} total={subtotal} />
-            <div className="min-h-screen pt-12 sm:pt-8 pb-8 sm:pb-12 bg-gradient-to-br from-gray-100 to-gray-50">
+            <div className="min-h-screen pt-12 sm:pt-8 pb-8 sm:pb-12 bg-linear-to-br from-gray-100 to-gray-50">
                 <div className="max-w-6xl mx-auto px-3 sm:px-4">
                     <div className="bg-white  rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 lg:p-12">
                         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Frown } from "lucide-react";
 import Link from "next/link";
 import ProductListCard from "@/components/ProductListCard";
 import ProductGridCard from "@/components/ProductGridCard";
@@ -24,9 +24,11 @@ type Product = {
     totalRatings: number;
     totalReviews: number;
     images: string[];
+    image: string;
     features: string[];
     brand: { id: number; name: string; slug: string } | null;
-    subcategory: { name: string; slug: string; category: { name: string; slug: string } };
+    category: { id: number; name: string; slug: string } | null;
+    subCategory: { id: number; name: string; slug: string } | null;
 };
 
 type Brand = { id: number; name: string; slug: string };
@@ -79,8 +81,12 @@ export default function ProductsPage() {
 
         try {
             const res = await fetch(`${API}/products/brands?${params}`);
-            setBrands(await res.json());
-        } catch (e) { console.error(e); }
+            const data = await res.json();
+            setBrands(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error(e);
+            setBrands([]);
+        }
     }, [categoryParam, subcategoryParam]);
 
     useEffect(() => {
@@ -148,11 +154,11 @@ export default function ProductsPage() {
         rating: p.rating,
         totalRatings: p.totalRatings,
         totalReviews: p.totalReviews,
-        image: p.images[0] || "📦",
-        features: p.features,
+        image: p.image || p.images?.[0] || "",
+        features: p.features || [],
         assured: true,
         href: `/products/${p.slug}`,
-        category: p.subcategory.slug,
+        category: p.subCategory?.slug || p.category?.slug || "",
         brand: p.brand?.name || ""
     }));
 
@@ -167,6 +173,7 @@ export default function ProductsPage() {
                 tempBrands={tempBrands}
                 tempPriceRange={tempPriceRange}
                 categoryParam={categoryParam}
+                subcategoryParam={subcategoryParam}
                 dynamicBrands={dynamicBrands}
                 onClose={() => setShowFilters(false)}
                 onApply={handleApplyMobileFilters}
@@ -181,6 +188,7 @@ export default function ProductsPage() {
                         selectedBrands={selectedBrands}
                         selectedPriceRange={selectedPriceRange}
                         categoryParam={categoryParam}
+                        subcategoryParam={subcategoryParam}
                         dynamicBrands={dynamicBrands}
                         onToggleBrand={(brand) => toggleBrand(brand, false)}
                         onTogglePriceRange={(index) => togglePriceRange(index, false)}
@@ -190,13 +198,13 @@ export default function ProductsPage() {
                     <main className="flex-1 min-w-0">
                         <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4 overflow-x-auto">
                             <Link href="/" className="hover:text-blue-600 cursor-pointer whitespace-nowrap">Home</Link>
-                            <ChevronRight size={16} className="flex-shrink-0" />
+                            <ChevronRight size={16} className="shrink-0" />
                             {categoryParam && (
                                 <>
                                     <Link href={`/products?category=${categoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
                                         {categoryParam.replace("-", " ")}
                                     </Link>
-                                    {subcategoryParam && <ChevronRight size={16} className="flex-shrink-0" />}
+                                    {subcategoryParam && <ChevronRight size={16} className="shrink-0" />}
                                 </>
                             )}
                             <span className="text-gray-900 font-medium whitespace-nowrap">{getCategoryTitle()}</span>
@@ -229,10 +237,10 @@ export default function ProductsPage() {
                             </div>
                         ) : (
                             <div className="bg-white rounded-lg p-8 sm:p-12 text-center">
-                                <div className="text-4xl sm:text-6xl mb-4">😔</div>
+                                <Frown className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
                                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">No products found</h2>
                                 <p className="text-sm sm:text-base text-gray-600 mb-6">Try adjusting your filters or check back later</p>
-                                <button onClick={clearAllFilters} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition cursor-pointer text-sm sm:text-base">
+                                <button onClick={clearAllFilters} className="bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition cursor-pointer text-sm sm:text-base">
                                     Clear Filters
                                 </button>
                             </div>

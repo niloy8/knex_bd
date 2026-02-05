@@ -7,35 +7,35 @@ import FashionPromo from "@/components/FashionPromo";
 
 export default function HomePage() {
     const banners = [
-        { title: "Office Chairs", subtitle: "Green Soul, Cell Bell & more", price: "From Tk 2,999", bgColor: "bg-gradient-to-r from-blue-600 to-indigo-600", image: "🪑" },
-        { title: "Gaming Laptops", subtitle: "ASUS, MSI & more", price: "From Tk 49,999", bgColor: "bg-gradient-to-r from-purple-600 to-pink-600", image: "💻" },
-        { title: "Smart Watches", subtitle: "Apple, Samsung & more", price: "From Tk 1,999", bgColor: "bg-gradient-to-r from-green-600 to-teal-600", image: "⌚" },
+        { title: "Office Chairs", subtitle: "Green Soul, Cell Bell & more", price: "From Tk 2,999", bgColor: "bg-gradient-to-r from-blue-600 to-indigo-600", iconName: "Armchair" },
+        { title: "Gaming Laptops", subtitle: "ASUS, MSI & more", price: "From Tk 49,999", bgColor: "bg-gradient-to-r from-purple-600 to-pink-600", iconName: "Laptop" },
+        { title: "Smart Watches", subtitle: "Apple, Samsung & more", price: "From Tk 1,999", bgColor: "bg-gradient-to-r from-green-600 to-teal-600", iconName: "Watch" },
     ];
 
     const categories = [
-        { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/category/fashion" },
-        { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/category/beauty" },
-        { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/category/mobiles" },
-        { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/category/smart-gadget" },
-        { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/category/electronics" },
-        { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/category/home-accessories" },
-        { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/stone", badge: "NEW" },
+        { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/products?category=fashion" },
+        { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/products?category=beauty" },
+        { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/products?category=mobiles" },
+        { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/products?category=smart-gadget" },
+        { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/products?category=electronics" },
+        { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/products?category=home-furniture" },
+        { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/products?category=stone", badge: "NEW" },
     ];
 
 
 
     const topDeals = [
-        { title: "Projectors", price: "From Tk 6990", image: "📽️", href: "/products?category=projectors" },
-        { title: "Speakers", price: "From Tk 499", image: "🔊", href: "/products?category=speakers" },
-        { title: "Gaming Monitor", price: "From Tk 6599", image: "🖥️", href: "/products?category=gaming-monitor" },
-        { title: "Gaming Chair", price: "From Tk 8279", image: "🪑", href: "/products?category=gaming-chair" },
+        { title: "Projectors", price: "From Tk 6990", iconName: "Projector", href: "/products?category=projectors" },
+        { title: "Speakers", price: "From Tk 499", iconName: "Speaker", href: "/products?category=speakers" },
+        { title: "Gaming Monitor", price: "From Tk 6599", iconName: "Monitor", href: "/products?category=gaming-monitor" },
+        { title: "Gaming Chair", price: "From Tk 8279", iconName: "Gamepad2", href: "/products?category=gaming-chair" },
     ];
 
     const saleDeals = [
-        { title: "Winter Accessories", price: "Min. 50% Off", image: "🧤", href: "/products?category=winter" },
-        { title: "Dry Fruits", price: "Min. 50% Off", image: "🥜", href: "/products?category=dry-fruits" },
-        { title: "Baby Care", price: "Up to 40% Off", image: "🍼", href: "/products?category=baby-care" },
-        { title: "Bike Lights", price: "From Tk 299", image: "💡", href: "/products?category=bike-lights" },
+        { title: "Winter Accessories", price: "Min. 50% Off", iconName: "Snowflake", href: "/products?category=winter" },
+        { title: "Dry Fruits", price: "Min. 50% Off", iconName: "Apple", href: "/products?category=dry-fruits" },
+        { title: "Baby Care", price: "Up to 40% Off", iconName: "Baby", href: "/products?category=baby-care" },
+        { title: "Bike Lights", price: "From Tk 299", iconName: "Lightbulb", href: "/products?category=bike-lights" },
     ];
 
     const winterEssentials = [
@@ -124,8 +124,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* Flight Bookings Banner */}
-                <Banner banners={[{ title: "Flight bookings", subtitle: "Lowest fares guaranteed", price: "From Tk 1,499*", bgColor: "bg-gradient-to-r from-orange-500 to-yellow-500", image: "✈️" }]} autoSlide={false} />
+
 
 
             </div>

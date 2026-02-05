@@ -1,4 +1,4 @@
-import { FileText, Tag, X, Plus } from "lucide-react";
+import { FileText, Tag, X, Plus, Trash2 } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";
 
@@ -83,7 +83,10 @@ export default function ProductFormFields({
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ name: newCategoryName.trim() }),
+                body: JSON.stringify({
+                    name: newCategoryName.trim(),
+                    slug: newCategoryName.trim().toLowerCase().replace(/\s+/g, '-')
+                }),
             });
             if (res.ok) {
                 const newCat = await res.json();
@@ -104,13 +107,13 @@ export default function ProductFormFields({
         setSaving(true);
         try {
             const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategories`, {
+            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ name: newSubcategoryName.trim() }),
+                body: JSON.stringify({ name: newSubcategoryName.trim(), slug: newSubcategoryName.trim().toLowerCase().replace(/\s+/g, '-') }),
             });
             if (res.ok) {
                 const newSub = await res.json();
@@ -153,7 +156,77 @@ export default function ProductFormFields({
         }
     };
 
-    const selectedCategory = categories.find(c => c.id === product.categoryId);
+    const handleDeleteCategory = async (categoryId: string) => {
+        if (!confirm("Are you sure you want to delete this category? This will fail if it has subcategories or products.")) return;
+        try {
+            const token = localStorage.getItem("adminToken");
+            const res = await fetch(`${API_URL}/categories/${categoryId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                if (product.categoryId === categoryId) {
+                    setProduct({ ...product, categoryId: "", subCategoryId: "" });
+                }
+                onCategoriesChange?.();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete category");
+            }
+        } catch (error) {
+            console.error("Error deleting category:", error);
+        }
+    };
+
+    const handleDeleteSubcategory = async (subId: string) => {
+        if (!confirm("Are you sure you want to delete this subcategory? This will fail if it has products.")) return;
+        try {
+            const token = localStorage.getItem("adminToken");
+            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory/${subId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                if (product.subCategoryId === subId) {
+                    setProduct({ ...product, subCategoryId: "" });
+                }
+                onCategoriesChange?.();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete subcategory");
+            }
+        } catch (error) {
+            console.error("Error deleting subcategory:", error);
+        }
+    };
+
+    const handleDeleteBrand = async (brandId: string) => {
+        if (!confirm("Are you sure you want to delete this brand? This will fail if it has products.")) return;
+        try {
+            const token = localStorage.getItem("adminToken");
+            const res = await fetch(`${API_URL}/brands/${brandId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                if (product.brandId === brandId) {
+                    setProduct({ ...product, brandId: "" });
+                }
+                onBrandsChange?.();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete brand");
+            }
+        } catch (error) {
+            console.error("Error deleting brand:", error);
+        }
+    };
+
+    const selectedCategory = categories.find(c => String(c.id) === String(product.categoryId));
+    const subCategories = selectedCategory?.subCategories || [];
+
+    console.log("Selected category:", selectedCategory);
+    console.log("SubCategories:", subCategories);
 
     return (
         <>
@@ -206,12 +279,15 @@ export default function ProductFormFields({
                     <div className="flex gap-2">
                         <select
                             value={product.categoryId || ""}
-                            onChange={(e) => setProduct({ ...product, categoryId: e.target.value, subCategoryId: "" })}
+                            onChange={(e) => {
+                                console.log("Category selected:", e.target.value);
+                                setProduct({ ...product, categoryId: e.target.value, subCategoryId: "" });
+                            }}
                             className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         >
                             <option value="">Select category</option>
                             {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
                             ))}
                         </select>
                         <button
@@ -222,6 +298,16 @@ export default function ProductFormFields({
                         >
                             <Plus className="w-4 h-4" />
                         </button>
+                        {product.categoryId && (
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteCategory(product.categoryId!)}
+                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                title="Delete selected category"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="flex gap-2">
@@ -267,7 +353,7 @@ export default function ProductFormFields({
                             className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-50"
                         >
                             <option value="">Select subcategory</option>
-                            {selectedCategory?.subCategories?.map((sub) => (
+                            {subCategories.map((sub) => (
                                 <option key={sub.id} value={sub.id}>{sub.name}</option>
                             ))}
                         </select>
@@ -280,6 +366,16 @@ export default function ProductFormFields({
                         >
                             <Plus className="w-4 h-4" />
                         </button>
+                        {product.subCategoryId && (
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteSubcategory(product.subCategoryId!)}
+                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                title="Delete selected subcategory"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="flex gap-2">
@@ -336,6 +432,16 @@ export default function ProductFormFields({
                         >
                             <Plus className="w-4 h-4" />
                         </button>
+                        {product.brandId && (
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteBrand(product.brandId!)}
+                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                title="Delete selected brand"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="flex gap-2">
@@ -374,9 +480,10 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">SKU</label>
                 <input
                     type="text"
-                    value={product.sku || ""}
-                    onChange={(e) => setProduct({ ...product, sku: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={product.sku || "Auto-generated on save"}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                    title="SKU is automatically generated"
                 />
             </div>
 

@@ -1,13 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Armchair, Laptop, Watch, Projector, Speaker, Monitor, Gamepad2, Snowflake, Apple, Baby, Lightbulb, Plane, Package, LucideIcon } from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+    Armchair, Laptop, Watch, Projector, Speaker, Monitor, Gamepad2, Snowflake, Apple, Baby, Lightbulb, Plane, Package
+};
+
 interface BannerProps {
     banners: Array<{
         title: string;
         subtitle: string;
         price?: string;
         bgColor?: string;
-        image: string;
+        iconName?: string;
     }>;
     autoSlide?: boolean;
     interval?: number;
@@ -35,16 +40,21 @@ export default function Banner({ banners, autoSlide = true, interval = 1500 }: B
     return (
         <div className="relative overflow-hidden rounded-2xl group">
             <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${current * 100}%)` }}>
-                {banners.map((banner, idx) => (
-                    <div key={idx} className={`cursor-pointer min-w-full ${banner.bgColor || "bg-linear-to-r from-blue-600 to-indigo-600"} p-8 text-white relative overflow-hidden min-h-[200px] flex items-center`}>
-                        <div className="relative z-10 max-w-md">
-                            <h2 className="text-3xl sm:text-4xl font-bold mb-2">{banner.title}</h2>
-                            <p className="text-lg mb-4 text-white/90">{banner.subtitle}</p>
-                            {banner.price && <p className="text-2xl font-bold">{banner.price}</p>}
+                {banners.map((banner, idx) => {
+                    const IconComponent = banner.iconName ? iconMap[banner.iconName] : null;
+                    return (
+                        <div key={idx} className={`cursor-pointer min-w-full ${banner.bgColor || "bg-linear-to-r from-blue-600 to-indigo-600"} p-8 text-white relative overflow-hidden min-h-[200px] flex items-center`}>
+                            <div className="relative z-10 max-w-md">
+                                <h2 className="text-3xl sm:text-4xl font-bold mb-2">{banner.title}</h2>
+                                <p className="text-lg mb-4 text-white/90">{banner.subtitle}</p>
+                                {banner.price && <p className="text-2xl font-bold">{banner.price}</p>}
+                            </div>
+                            <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 opacity-20">
+                                {IconComponent && <IconComponent className="w-32 h-32 sm:w-48 sm:h-48" />}
+                            </div>
                         </div>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 text-9xl opacity-20">{banner.image}</div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <button onClick={prev} className="cursor-pointer absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 md:p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">

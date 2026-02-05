@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ShoppingCart, Search, Heart, UserRound, Menu, X, Monitor, Footprints, Home, Shirt, Sparkles, Gamepad2, Loader2 } from "lucide-react";
+import { ShoppingCart, Search, Heart, UserRound, Menu, X, Loader2, Package } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -23,19 +23,6 @@ export default function Header() {
     const [suggestions, setSuggestions] = useState<SearchProduct[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
-
-    const getCategoryIcon = (category: string) => {
-        const icons: Record<string, React.ReactNode> = {
-            "fashion": <Shirt className="w-5 h-5 text-pink-600" />,
-            "beauty": <Sparkles className="w-5 h-5 text-yellow-600" />,
-            "mobiles": <Monitor className="w-5 h-5 text-blue-600" />,
-            "smart-gadget": <Gamepad2 className="w-5 h-5 text-red-600" />,
-            "electronics": <Monitor className="w-5 h-5 text-blue-600" />,
-            "home-furniture": <Home className="w-5 h-5 text-purple-600" />,
-            "stone": <Sparkles className="w-5 h-5 text-gray-600" />,
-        };
-        return icons[category] || <Monitor className="w-5 h-5 text-gray-600" />;
-    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -127,11 +114,11 @@ export default function Header() {
                                                 onClick={() => setShowSuggestions(false)}
                                                 className="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded-lg transition-colors"
                                             >
-                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden relative">
                                                     {product.image ? (
-                                                        <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                                                        <Image src={product.image} alt={product.title} fill className="object-cover" unoptimized />
                                                     ) : (
-                                                        <span className="text-2xl">📦</span>
+                                                        <Package className="w-6 h-6 text-gray-400" />
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -189,11 +176,11 @@ export default function Header() {
                                             onClick={() => setShowSuggestions(false)}
                                             className="flex items-center gap-2 px-2 py-2 hover:bg-blue-50 rounded-lg"
                                         >
-                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden relative">
                                                 {product.image ? (
-                                                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                                                    <Image src={product.image} alt={product.title} fill className="object-cover" unoptimized />
                                                 ) : (
-                                                    <span className="text-xl">📦</span>
+                                                    <Package className="w-5 h-5 text-gray-400" />
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">

@@ -1,6 +1,7 @@
 "use client";
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { Minus, Plus, Trash2, Package } from "lucide-react";
 
 interface CartItemProps {
     id: string;
@@ -25,8 +26,12 @@ export default function CartItem({
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-gray-200 last:border-0">
             {/* Product Image & Info */}
             <div className="flex items-center gap-3 sm:gap-4 flex-1">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-800 to-gray-600 rounded-xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-md">
-                    {image}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-linear-to-br from-gray-800 to-gray-600 rounded-xl flex items-center justify-center shrink-0 shadow-md overflow-hidden relative">
+                    {image ? (
+                        <Image src={image} alt={title} fill className="object-cover" unoptimized />
+                    ) : (
+                        <Package className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                    )}
                 </div>
 
                 <div className="flex-1 min-w-0">

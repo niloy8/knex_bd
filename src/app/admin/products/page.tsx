@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import DataTable from "@/components/admin/DataTable";
 import Badge from "@/components/admin/Badge";
-import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2, Package, Star } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -55,8 +56,17 @@ export default function AdminProducts() {
             if (statusFilter === "outofstock") params.append("inStock", "false");
 
             const res = await fetch(`${API_URL}/products?${params.toString()}`);
+
+            // Check if response is JSON
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("API returned non-JSON response. Is the backend server running?");
+                setProducts([]);
+                return;
+            }
+
             const data = await res.json();
-            setProducts(data.products || []);
+            setProducts(Array.isArray(data.products) ? data.products : []);
             setTotalProducts(data.total || 0);
             setTotalPages(data.totalPages || 1);
         } catch (error) {
@@ -70,10 +80,20 @@ export default function AdminProducts() {
     const fetchCategories = useCallback(async () => {
         try {
             const res = await fetch(`${API_URL}/categories`);
+
+            // Check if response is JSON
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("API returned non-JSON response. Is the backend server running?");
+                setCategories([]);
+                return;
+            }
+
             const data = await res.json();
-            setCategories(data || []);
+            setCategories(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching categories:", error);
+            setCategories([]);
         }
     }, []);
 
@@ -178,11 +198,11 @@ export default function AdminProducts() {
                                 <tr key={product.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden relative">
                                                 {product.image ? (
-                                                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                                                    <Image src={product.image} alt={product.title} fill className="object-cover" unoptimized />
                                                 ) : (
-                                                    <span className="text-2xl">📦</span>
+                                                    <Package className="w-6 h-6 text-gray-400" />
                                                 )}
                                             </div>
                                             <div>
@@ -214,7 +234,7 @@ export default function AdminProducts() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-1">
-                                            <span className="text-yellow-400">★</span>
+                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                             <span className="text-sm font-medium text-gray-900">{product.rating.toFixed(1)}</span>
                                             <span className="text-xs text-gray-400">({product.totalReviews})</span>
                                         </div>
@@ -262,8 +282,8 @@ export default function AdminProducts() {
                                 key={page}
                                 onClick={() => setCurrentPage(page)}
                                 className={`px-3 py-1.5 rounded-lg text-sm ${currentPage === page
-                                        ? "bg-blue-600 text-white"
-                                        : "border border-gray-200 hover:bg-gray-50"
+                                    ? "bg-blue-600 text-white"
+                                    : "border border-gray-200 hover:bg-gray-50"
                                     }`}
                             >
                                 {page}

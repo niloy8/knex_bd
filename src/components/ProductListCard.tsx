@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Package } from "lucide-react";
 import { useState } from "react";
 
 interface ProductListCardProps {
@@ -53,8 +53,12 @@ export default function ProductListCard({
 
             {/* Product Image */}
             <div className="w-full sm:w-40 md:w-48 h-40 sm:h-40 md:h-48 flex-shrink-0 bg-gray-50 rounded-lg relative">
-                <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl md:text-6xl">
-                    {image}
+                <div className="w-full h-full flex items-center justify-center relative">
+                    {image ? (
+                        <Image src={image} alt={title} fill className="object-contain" unoptimized />
+                    ) : (
+                        <Package className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-gray-300" />
+                    )}
                 </div>
                 {badge && (
                     <div className="absolute top-2 left-2 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-bold">

@@ -1,4 +1,4 @@
-import { Eye, Heart } from "lucide-react";
+import { Eye, Heart, Package, Star, Check } from "lucide-react";
 import Image from "next/image";
 
 interface Product {
@@ -54,7 +54,7 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                                 </div>
                             )}
                             <div className="relative flex-1 aspect-square bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" suppressHydrationWarning>
-                                {mainImage ? <Image src={mainImage} alt="Product" fill className="object-cover" unoptimized /> : <span className="text-6xl">📦</span>}
+                                {mainImage ? <Image src={mainImage} alt="Product" fill className="object-cover" unoptimized /> : <Package className="w-16 h-16 text-gray-300" />}
                                 <button className="absolute top-4 right-4 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all group">
                                     <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 group-hover:fill-red-500 transition-all" />
                                 </button>
@@ -67,9 +67,9 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">{product.title || "Product Title"}</h1>
                             <div className="flex items-center gap-2 mt-2">
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5">
                                     {[...Array(5)].map((_, i) => (
-                                        <span key={i}>{i < Math.floor(product.rating || 0) ? "⭐" : "☆"}</span>
+                                        <Star key={i} className={`w-4 h-4 ${i < Math.floor(product.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
                                     ))}
                                 </div>
                                 <span className="text-sm text-gray-600">{product.rating || 0} ({product.totalReviews || 0} reviews)</span>
@@ -159,7 +159,7 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                                 <ul className="space-y-1">
                                     {features.map((feature, idx) => (
                                         <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                                            <span className="text-blue-600 mt-0.5">✓</span>
+                                            <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                             <span>{feature}</span>
                                         </li>
                                     ))}
@@ -170,7 +170,7 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                         {description && (
                             <div className="pt-4 border-t border-gray-200">
                                 <h3 className="text-sm font-medium text-gray-900 mb-2">Description:</h3>
-                                <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+                                <div className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: description }} />
                             </div>
                         )}
 

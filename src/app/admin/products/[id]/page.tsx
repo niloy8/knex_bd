@@ -44,7 +44,7 @@ export default function AdminEditProduct() {
     const [productType, setProductType] = useState<string>("simple");
     const [showPreview, setShowPreview] = useState(false);
     const [swatchType, setSwatchType] = useState<"color" | "image">("color");
-    const [imageSwatch, setImageSwatch] = useState<{ name: string; image: string }[]>([]);
+    const [imageSwatch, setImageSwatch] = useState<{ name: string; image: string; images: string[] }[]>([]);
     const [displayOptions, setDisplayOptions] = useState<string[]>([]);
     const [description, setDescription] = useState<string>("");
     const [tags, setTags] = useState<string[]>([]);
@@ -125,14 +125,26 @@ export default function AdminEditProduct() {
             setColors(p.colors || []);
             setSizes(p.sizes || []);
             setFeatures(p.features || []);
-            setImageSwatch(p.imageSwatch || []);
             setDisplayOptions(p.displayOptions || []);
             setDescription(p.description || "");
             setTags(p.tags || []);
-            setVariants(p.variants || []);
-            const hasVariants = p.colors || p.sizes || p.imageSwatch;
-            setProductType(hasVariants ? "variable" : "simple");
-            setSwatchType(p.imageSwatch?.length > 0 ? "image" : "color");
+
+            // ProductVariants component uses {name, values[]} format - initialize empty
+            // This is for RAM/Storage type variants, not color swatches
+            setVariants([]);
+
+            // Map API variants (ProductVariant model) to imageSwatch format for color/image swatches
+            const imageSwatchData = (p.variants || []).map((v: { name: string; image: string; images?: string[] }) => ({
+                name: v.name || "",
+                image: v.image || "",
+                images: v.images && Array.isArray(v.images) ? v.images : (v.image ? [v.image] : []),
+            }));
+            setImageSwatch(imageSwatchData);
+
+            // Determine product type and swatch type
+            const hasVariants = p.variants?.length > 0 || p.colors?.length > 0 || p.sizes?.length > 0;
+            setProductType(p.productType || (hasVariants ? "variable" : "simple"));
+            setSwatchType(p.swatchType || (p.variants?.length > 0 ? "image" : "color"));
         } catch (error) {
             console.error("Error fetching product:", error);
             router.push("/admin/products");
@@ -171,12 +183,16 @@ export default function AdminEditProduct() {
                 inStock: product.inStock,
                 stockQuantity: Number(product.stockQuantity) || 0,
                 sku: product.sku,
+                productType,
+                swatchType: productType === "variable" ? swatchType : null,
                 ...(productType === "variable" && {
                     ...(swatchType === "color" ? { colors } : { imageSwatch }),
                     sizes,
                     displayOptions,
                 }),
             };
+
+            console.log("Saving product data:", { productType, swatchType, imageSwatch, productData });
 
             const url = isNew ? `${API_URL}/products` : `${API_URL}/products/${id}`;
             const method = isNew ? "POST" : "PUT";

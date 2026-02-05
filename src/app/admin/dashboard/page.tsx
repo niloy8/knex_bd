@@ -27,22 +27,40 @@ export default function AdminDashboard() {
     const fetchDashboardData = useCallback(async () => {
         try {
             const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-                fetch(`${API_URL}/products?limit=1`),
-                fetch(`${API_URL}/categories`),
-                fetch(`${API_URL}/brands`),
+                fetch(`${API_URL}/products?limit=1`).catch(() => null),
+                fetch(`${API_URL}/categories`).catch(() => null),
+                fetch(`${API_URL}/brands`).catch(() => null),
             ]);
 
-            const productsData = await productsRes.json();
-            const categoriesData = await categoriesRes.json();
-            const brandsData = await brandsRes.json();
+            let productsData = { total: 0 };
+            let categoriesData: Category[] = [];
+            let brandsData: string[] = [];
+
+            if (productsRes?.ok) {
+                try {
+                    productsData = await productsRes.json();
+                } catch { /* ignore parse errors */ }
+            }
+            if (categoriesRes?.ok) {
+                try {
+                    const data = await categoriesRes.json();
+                    categoriesData = Array.isArray(data) ? data : [];
+                } catch { /* ignore parse errors */ }
+            }
+            if (brandsRes?.ok) {
+                try {
+                    const data = await brandsRes.json();
+                    brandsData = Array.isArray(data) ? data : [];
+                } catch { /* ignore parse errors */ }
+            }
 
             setStats({
                 totalProducts: productsData.total || 0,
-                totalCategories: categoriesData?.length || 0,
-                totalBrands: brandsData?.length || 0,
+                totalCategories: categoriesData.length,
+                totalBrands: brandsData.length,
             });
 
-            setTopCategories(categoriesData?.slice(0, 4) || []);
+            setTopCategories(categoriesData.slice(0, 4));
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
         } finally {

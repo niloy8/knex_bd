@@ -1,10 +1,31 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { X } from "lucide-react";
 import { filters } from "@/data/productsData";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+interface SubCategory {
+    id: number;
+    name: string;
+    slug: string;
+}
+
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    subCategories?: SubCategory[];
+    subcategories?: SubCategory[];
+}
 
 interface DesktopFiltersProps {
     selectedBrands: string[];
     selectedPriceRange: number[];
     categoryParam: string | null;
+    subcategoryParam?: string | null;
     dynamicBrands?: string[];
     onToggleBrand: (brand: string) => void;
     onTogglePriceRange: (index: number) => void;
@@ -14,15 +35,36 @@ interface DesktopFiltersProps {
 export default function DesktopFilters({
     selectedBrands,
     selectedPriceRange,
+    categoryParam,
+    subcategoryParam,
     dynamicBrands,
     onToggleBrand,
     onTogglePriceRange,
     onClearAll,
 }: DesktopFiltersProps) {
     const brandsToShow = dynamicBrands && dynamicBrands.length > 0 ? dynamicBrands : filters.brands;
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        fetch(`${API}/categories`)
+            .then(res => res.json())
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(err => {
+                console.error(err);
+                setCategories([]);
+            });
+    }, []);
+
+    const currentCategory = categoryParam
+        ? categories.find(c => c.slug === categoryParam)
+        : null;
+
+    const subcategories = currentCategory
+        ? (currentCategory.subCategories || currentCategory.subcategories || [])
+        : [];
 
     return (
-        <aside className="hidden lg:block w-64 flex-shrink-0">
+        <aside className="hidden lg:block w-64 shrink-0">
             <div className="bg-white rounded-lg p-4 sticky top-20">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold">Filters</h2>
@@ -45,6 +87,48 @@ export default function DesktopFilters({
                                 <X size={14} />
                             </button>
                         ))}
+                    </div>
+                )}
+
+                {/* Categories Section */}
+                {categories.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="font-semibold mb-3">Categories</h3>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                            {categories.map((cat) => (
+                                <Link
+                                    key={cat.id}
+                                    href={`/products?category=${cat.slug}`}
+                                    className={`block px-2 py-1.5 rounded text-sm transition ${categoryParam === cat.slug
+                                            ? "bg-blue-50 text-blue-600 font-medium"
+                                            : "hover:bg-gray-50 text-gray-700"
+                                        }`}
+                                >
+                                    {cat.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Subcategories Section - Only show when a category is selected */}
+                {categoryParam && subcategories.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="font-semibold mb-3">Subcategories</h3>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                            {subcategories.map((sub) => (
+                                <Link
+                                    key={sub.id}
+                                    href={`/products?category=${categoryParam}&subcategory=${sub.slug}`}
+                                    className={`block px-2 py-1.5 rounded text-sm transition ${subcategoryParam === sub.slug
+                                            ? "bg-blue-50 text-blue-600 font-medium"
+                                            : "hover:bg-gray-50 text-gray-700"
+                                        }`}
+                                >
+                                    {sub.name}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 )}
 

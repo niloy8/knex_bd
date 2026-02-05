@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Package } from "lucide-react";
 import { useState } from "react";
 
 interface ProductGridCardProps {
@@ -47,8 +47,12 @@ export default function ProductGridCard({
             </button>
 
             <div className="aspect-square bg-gray-50 p-4 relative">
-                <div className="w-full h-full flex items-center justify-center text-6xl">
-                    {image}
+                <div className="w-full h-full flex items-center justify-center relative">
+                    {image ? (
+                        <Image src={image} alt={title} fill className="object-contain" unoptimized />
+                    ) : (
+                        <Package className="w-16 h-16 text-gray-300" />
+                    )}
                 </div>
             </div>
 
