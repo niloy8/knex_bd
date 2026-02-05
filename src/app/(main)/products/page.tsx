@@ -62,6 +62,22 @@ export default function ProductsPage() {
             if (categoryParam) params.set("category", categoryParam);
             if (subcategoryParam) params.set("subcategory", subcategoryParam);
             if (selectedBrands.length > 0) params.set("brand", selectedBrands[0]);
+
+            // Add price range filter
+            if (selectedPriceRange.length > 0) {
+                const priceRanges = [
+                    { min: 0, max: 1000 },
+                    { min: 1000, max: 5000 },
+                    { min: 5000, max: 10000 },
+                    { min: 10000, max: 20000 },
+                    { min: 20000, max: null },
+                ];
+                const range = priceRanges[selectedPriceRange[0]];
+                if (range) {
+                    if (range.min) params.set("minPrice", range.min.toString());
+                    if (range.max) params.set("maxPrice", range.max.toString());
+                }
+            }
             if (sortBy === "price -- low to high") params.set("sort", "price-low");
             else if (sortBy === "price -- high to low") params.set("sort", "price-high");
             params.set("page", currentPage.toString());
@@ -84,7 +100,7 @@ export default function ProductsPage() {
         loadProducts();
 
         return () => { isMounted = false; };
-    }, [categoryParam, subcategoryParam, selectedBrands, sortBy, currentPage]);
+    }, [categoryParam, subcategoryParam, selectedBrands, selectedPriceRange, sortBy, currentPage]);
 
     useEffect(() => {
         let isMounted = true;
@@ -176,8 +192,11 @@ export default function ProductsPage() {
         brand: p.brand?.name || ""
     }));
 
-    // Dynamic brands for filters
-    const dynamicBrands = brands.map(b => b.name);
+    // Helper to get brand name from slug
+    const getBrandName = (slug: string) => {
+        const brand = brands.find(b => b.slug === slug);
+        return brand?.name || slug;
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -187,12 +206,13 @@ export default function ProductsPage() {
                 tempPriceRange={tempPriceRange}
                 categoryParam={categoryParam}
                 subcategoryParam={subcategoryParam}
-                dynamicBrands={dynamicBrands}
+                brands={brands}
                 onClose={() => setShowFilters(false)}
                 onApply={handleApplyMobileFilters}
-                onToggleBrand={(brand) => toggleBrand(brand, true)}
+                onToggleBrand={(slug) => toggleBrand(slug, true)}
                 onTogglePriceRange={(index) => togglePriceRange(index, true)}
                 onClearTemp={() => { setTempBrands([]); setTempPriceRange([]); }}
+                getBrandName={getBrandName}
             />
 
             <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
@@ -202,10 +222,11 @@ export default function ProductsPage() {
                         selectedPriceRange={selectedPriceRange}
                         categoryParam={categoryParam}
                         subcategoryParam={subcategoryParam}
-                        dynamicBrands={dynamicBrands}
-                        onToggleBrand={(brand) => toggleBrand(brand, false)}
+                        brands={brands}
+                        onToggleBrand={(slug) => toggleBrand(slug, false)}
                         onTogglePriceRange={(index) => togglePriceRange(index, false)}
                         onClearAll={clearAllFilters}
+                        getBrandName={getBrandName}
                     />
 
                     <main className="flex-1 min-w-0">

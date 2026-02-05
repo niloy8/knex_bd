@@ -21,15 +21,22 @@ interface Category {
     subcategories?: SubCategory[];
 }
 
+interface Brand {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface DesktopFiltersProps {
     selectedBrands: string[];
     selectedPriceRange: number[];
     categoryParam: string | null;
     subcategoryParam?: string | null;
-    dynamicBrands?: string[];
-    onToggleBrand: (brand: string) => void;
+    brands?: Brand[];
+    onToggleBrand: (slug: string) => void;
     onTogglePriceRange: (index: number) => void;
     onClearAll: () => void;
+    getBrandName?: (slug: string) => string;
 }
 
 export default function DesktopFilters({
@@ -37,12 +44,12 @@ export default function DesktopFilters({
     selectedPriceRange,
     categoryParam,
     subcategoryParam,
-    dynamicBrands,
+    brands = [],
     onToggleBrand,
     onTogglePriceRange,
     onClearAll,
+    getBrandName,
 }: DesktopFiltersProps) {
-    const brandsToShow = dynamicBrands && dynamicBrands.length > 0 ? dynamicBrands : filters.brands;
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
@@ -75,9 +82,9 @@ export default function DesktopFilters({
 
                 {(selectedBrands.length > 0 || selectedPriceRange.length > 0) && (
                     <div className="mb-4 flex flex-wrap gap-2">
-                        {selectedBrands.map((brand) => (
-                            <button key={brand} onClick={() => onToggleBrand(brand)} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200">
-                                {brand}
+                        {selectedBrands.map((slug) => (
+                            <button key={slug} onClick={() => onToggleBrand(slug)} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200">
+                                {getBrandName ? getBrandName(slug) : slug}
                                 <X size={14} />
                             </button>
                         ))}
@@ -100,8 +107,8 @@ export default function DesktopFilters({
                                     key={cat.id}
                                     href={`/products?category=${cat.slug}`}
                                     className={`block px-2 py-1.5 rounded text-sm transition ${categoryParam === cat.slug
-                                            ? "bg-blue-50 text-blue-600 font-medium"
-                                            : "hover:bg-gray-50 text-gray-700"
+                                        ? "bg-blue-50 text-blue-600 font-medium"
+                                        : "hover:bg-gray-50 text-gray-700"
                                         }`}
                                 >
                                     {cat.name}
@@ -121,8 +128,8 @@ export default function DesktopFilters({
                                     key={sub.id}
                                     href={`/products?category=${categoryParam}&subcategory=${sub.slug}`}
                                     className={`block px-2 py-1.5 rounded text-sm transition ${subcategoryParam === sub.slug
-                                            ? "bg-blue-50 text-blue-600 font-medium"
-                                            : "hover:bg-gray-50 text-gray-700"
+                                        ? "bg-blue-50 text-blue-600 font-medium"
+                                        : "hover:bg-gray-50 text-gray-700"
                                         }`}
                                 >
                                     {sub.name}
@@ -132,14 +139,14 @@ export default function DesktopFilters({
                     </div>
                 )}
 
-                {brandsToShow.length > 0 && (
+                {brands.length > 0 && (
                     <div className="mb-6">
                         <h3 className="font-semibold mb-3">Brand</h3>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {brandsToShow.map((brand) => (
-                                <label key={brand} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => onToggleBrand(brand)} className="w-4 h-4 cursor-pointer" />
-                                    <span className="text-sm">{brand}</span>
+                            {brands.map((brand) => (
+                                <label key={brand.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" checked={selectedBrands.includes(brand.slug)} onChange={() => onToggleBrand(brand.slug)} className="w-4 h-4 cursor-pointer" />
+                                    <span className="text-sm">{brand.name}</span>
                                 </label>
                             ))}
                         </div>

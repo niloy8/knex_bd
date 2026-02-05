@@ -21,18 +21,25 @@ interface Category {
     subcategories?: SubCategory[];
 }
 
+interface Brand {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface MobileFiltersProps {
     showFilters: boolean;
     tempBrands: string[];
     tempPriceRange: number[];
     categoryParam: string | null;
     subcategoryParam?: string | null;
-    dynamicBrands?: string[];
+    brands?: Brand[];
     onClose: () => void;
     onApply: () => void;
-    onToggleBrand: (brand: string) => void;
+    onToggleBrand: (slug: string) => void;
     onTogglePriceRange: (index: number) => void;
     onClearTemp: () => void;
+    getBrandName?: (slug: string) => string;
 }
 
 export default function MobileFilters({
@@ -41,12 +48,13 @@ export default function MobileFilters({
     tempPriceRange,
     categoryParam,
     subcategoryParam,
-    dynamicBrands,
+    brands = [],
     onClose,
     onApply,
     onToggleBrand,
     onTogglePriceRange,
     onClearTemp,
+    getBrandName,
 }: MobileFiltersProps) {
     const [categories, setCategories] = useState<Category[]>([]);
 
@@ -61,8 +69,6 @@ export default function MobileFilters({
     }, []);
 
     if (!showFilters) return null;
-
-    const brandsToShow = dynamicBrands && dynamicBrands.length > 0 ? dynamicBrands : filters.brands;
 
     const currentCategory = categoryParam
         ? categories.find(c => c.slug === categoryParam)
@@ -94,9 +100,9 @@ export default function MobileFilters({
                                 </button>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {tempBrands.map((brand) => (
-                                    <button key={brand} onClick={() => onToggleBrand(brand)} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200">
-                                        {brand}
+                                {tempBrands.map((slug) => (
+                                    <button key={slug} onClick={() => onToggleBrand(slug)} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200">
+                                        {getBrandName ? getBrandName(slug) : slug}
                                         <X size={14} />
                                     </button>
                                 ))}
@@ -121,8 +127,8 @@ export default function MobileFilters({
                                         href={`/products?category=${cat.slug}`}
                                         onClick={onClose}
                                         className={`block px-2 py-1.5 rounded text-sm transition ${categoryParam === cat.slug
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : "hover:bg-gray-50 text-gray-700"
+                                            ? "bg-blue-50 text-blue-600 font-medium"
+                                            : "hover:bg-gray-50 text-gray-700"
                                             }`}
                                     >
                                         {cat.name}
@@ -143,8 +149,8 @@ export default function MobileFilters({
                                         href={`/products?category=${categoryParam}&subcategory=${sub.slug}`}
                                         onClick={onClose}
                                         className={`block px-2 py-1.5 rounded text-sm transition ${subcategoryParam === sub.slug
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : "hover:bg-gray-50 text-gray-700"
+                                            ? "bg-blue-50 text-blue-600 font-medium"
+                                            : "hover:bg-gray-50 text-gray-700"
                                             }`}
                                     >
                                         {sub.name}
@@ -154,14 +160,14 @@ export default function MobileFilters({
                         </div>
                     )}
 
-                    {brandsToShow.length > 0 && (
+                    {brands.length > 0 && (
                         <div className="mb-6">
                             <h3 className="font-semibold mb-3">Brand</h3>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {brandsToShow.map((brand) => (
-                                    <label key={brand} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                        <input type="checkbox" checked={tempBrands.includes(brand)} onChange={() => onToggleBrand(brand)} className="w-4 h-4 cursor-pointer" />
-                                        <span className="text-sm">{brand}</span>
+                                {brands.map((brand) => (
+                                    <label key={brand.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input type="checkbox" checked={tempBrands.includes(brand.slug)} onChange={() => onToggleBrand(brand.slug)} className="w-4 h-4 cursor-pointer" />
+                                        <span className="text-sm">{brand.name}</span>
                                     </label>
                                 ))}
                             </div>
