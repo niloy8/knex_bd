@@ -1,6 +1,7 @@
 
 import Footer from "./fotter";
 import Header from "./header";
+import ConditionalCategoryNav from "@/components/ConditionalCategoryNav";
 
 export default function MainLayout({
     children,
@@ -10,6 +11,7 @@ export default function MainLayout({
     return (
         <>
             <Header></Header>
+            <ConditionalCategoryNav />
             {children}
             <Footer></Footer>
         </>

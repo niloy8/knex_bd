@@ -9,7 +9,6 @@ import ProductGridCard from "@/components/ProductGridCard";
 import MobileFilters from "@/components/MobileFilters";
 import DesktopFilters from "@/components/DesktopFilters";
 import ProductsHeader from "@/components/ProductsHeader";
-import CategoryNav from "@/components/CategoryNav";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -167,7 +166,6 @@ export default function ProductsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <CategoryNav />
             <MobileFilters
                 showFilters={showFilters}
                 tempBrands={tempBrands}

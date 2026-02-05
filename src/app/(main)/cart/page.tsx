@@ -3,7 +3,6 @@
 import { useState } from "react";
 import CartItem from "@/components/CartItem";
 import CheckoutModal from "@/components/CheckoutModal";
-import CategoryNav from "@/components/CategoryNav";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
@@ -41,7 +40,6 @@ export default function CartPage() {
 
     return (
         <>
-            <CategoryNav />
             <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} total={subtotal} />
             <div className="min-h-screen pt-12 sm:pt-8 pb-8 sm:pb-12 bg-linear-to-br from-gray-100 to-gray-50">
                 <div className="max-w-6xl mx-auto px-3 sm:px-4">

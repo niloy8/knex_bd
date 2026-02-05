@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
@@ -19,6 +19,9 @@ type Category = {
 export default function CategoryNav() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [dropdownPosition, setDropdownPosition] = useState<{ left: number; width: number } | null>(null);
+    const navRef = useRef<HTMLDivElement>(null);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         fetch(`${API}/categories`)
@@ -30,51 +33,120 @@ export default function CategoryNav() {
             });
     }, []);
 
-    const getSubcategories = (category: Category) =>
-        category.subCategories || category.subcategories || [];
+    const getSubcategories = useCallback((category: Category) =>
+        category.subCategories || category.subcategories || [], []);
+
+    const handleMouseEnter = useCallback((categorySlug: string, element: HTMLDivElement) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setActiveDropdown(categorySlug);
+
+        // Calculate dropdown position
+        const rect = element.getBoundingClientRect();
+        const navRect = navRef.current?.getBoundingClientRect();
+        if (navRect) {
+            setDropdownPosition({
+                left: rect.left - navRect.left,
+                width: rect.width
+            });
+        }
+    }, []);
+
+    const handleMouseLeave = useCallback(() => {
+        timeoutRef.current = setTimeout(() => {
+            setActiveDropdown(null);
+            setDropdownPosition(null);
+        }, 150);
+    }, []);
+
+    const handleDropdownEnter = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+    }, []);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+
+    const activeCategory = categories.find(c => c.slug === activeDropdown);
+    const activeSubs = activeCategory ? getSubcategories(activeCategory) : [];
 
     return (
-        <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-around gap-4 overflow-x-auto scrollbar-hide py-3">
+        <nav
+            ref={navRef}
+            className="bg-white border-b border-gray-200 relative"
+            aria-label="Category navigation"
+        >
+            <div className="max-w-7xl mx-auto">
+                <div className="flex items-center justify-center overflow-x-auto scrollbar-hide">
                     {categories.map((category) => {
                         const subs = getSubcategories(category);
+                        const isActive = activeDropdown === category.slug;
+
                         return (
                             <div
                                 key={category.id}
-                                className="relative"
-                                onMouseEnter={() => setActiveDropdown(category.slug)}
-                                onMouseLeave={() => setActiveDropdown(null)}
+                                className="relative shrink-0"
+                                onMouseEnter={(e) => handleMouseEnter(category.slug, e.currentTarget)}
+                                onMouseLeave={handleMouseLeave}
                             >
                                 <Link
                                     href={`/products?category=${category.slug}`}
-                                    className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 whitespace-nowrap transition px-2 py-1"
+                                    className={`
+                                        flex items-center gap-1 px-4 py-3
+                                        text-sm font-medium whitespace-nowrap
+                                        transition-colors duration-200
+                                        border-b-2
+                                        ${isActive
+                                            ? 'text-blue-600 border-blue-600'
+                                            : 'text-gray-700 border-transparent hover:text-blue-600'
+                                        }
+                                    `}
                                 >
-                                    <span>{category.icon}</span>
                                     <span>{category.name}</span>
                                     {subs.length > 0 && (
-                                        <ChevronDown className="w-4 h-4" />
+                                        <ChevronDown
+                                            className={`w-3.5 h-3.5 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
+                                        />
                                     )}
                                 </Link>
-
-                                {activeDropdown === category.slug && subs.length > 0 && (
-                                    <div className="absolute top-full left-0 bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[200px] z-50">
-                                        {subs.map((sub) => (
-                                            <Link
-                                                key={sub.id}
-                                                href={`/products?category=${category.slug}&subcategory=${sub.slug}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                                            >
-                                                {sub.name}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
                         );
                     })}
                 </div>
             </div>
+
+            {/* Dropdown Overlay for Subcategories */}
+            {activeDropdown && activeSubs.length > 0 && dropdownPosition && (
+                <div
+                    className="absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50"
+                    onMouseEnter={handleDropdownEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <div className="max-w-7xl mx-auto px-4 py-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                            {activeSubs.map((sub) => (
+                                <Link
+                                    key={sub.id}
+                                    href={`/products?category=${activeDropdown}&subcategory=${sub.slug}`}
+                                    className="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150"
+                                >
+                                    {sub.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </nav>
     );
 }

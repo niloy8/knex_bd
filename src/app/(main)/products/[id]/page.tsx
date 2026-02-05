@@ -16,7 +16,6 @@ import {
     Loader2,
     Package
 } from "lucide-react";
-import CategoryNav from "@/components/CategoryNav";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -233,7 +232,6 @@ export default function SingleProductPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
-            <CategoryNav></CategoryNav>
             {/* Breadcrumbs */}
             <div className="bg-white">
                 <div className="container mx-auto px-4 py-2">
