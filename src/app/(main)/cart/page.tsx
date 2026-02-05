@@ -5,23 +5,22 @@ import CartItem from "@/components/CartItem";
 import CheckoutModal from "@/components/CheckoutModal";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import { useCart } from "@/hooks/useCart";
 
 export default function CartPage() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-    const [items, setItems] = useState([
-        { id: "1", title: "Gaming Monitor 144Hz", price: 100, image: "/products/monitor.png", quantity: 1 },
-        { id: "2", title: "Mechanical Keyboard", price: 200, image: "/products/keyboard.png", quantity: 2 },
+    const { items, isLoaded, updateQuantity, removeFromCart, getCartTotal } = useCart();
 
-    ]);
+    const subtotal = getCartTotal();
 
-    const handleQuantityChange = (id: string, qty: number) => {
-        if (qty < 1) return;
-        setItems(items.map(item => item.id === id ? { ...item, quantity: qty } : item));
-    };
-
-    const handleRemove = (id: string) => setItems(items.filter(item => item.id !== id));
-
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // Show loading while cart is being loaded
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
 
     if (items.length === 0) {
         return (
@@ -43,7 +42,7 @@ export default function CartPage() {
             <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} total={subtotal} />
             <div className="min-h-screen pt-12 sm:pt-8 pb-8 sm:pb-12 bg-linear-to-br from-gray-100 to-gray-50">
                 <div className="max-w-6xl mx-auto px-3 sm:px-4">
-                    <div className="bg-white  rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 lg:p-12">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 lg:p-12">
                         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                             {/* Left: Shopping Cart */}
                             <div className="lg:col-span-2">
@@ -56,9 +55,13 @@ export default function CartPage() {
                                     {items.map(item => (
                                         <CartItem
                                             key={item.id}
-                                            {...item}
-                                            onQuantityChange={handleQuantityChange}
-                                            onRemove={handleRemove}
+                                            id={item.id}
+                                            title={item.title}
+                                            price={item.price}
+                                            image={item.image}
+                                            quantity={item.quantity}
+                                            onQuantityChange={(_, qty) => updateQuantity(item.productId, qty)}
+                                            onRemove={() => removeFromCart(item.productId)}
                                         />
                                     ))}
                                 </div>

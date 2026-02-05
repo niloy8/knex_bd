@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Star, Package } from "lucide-react";
-import { useState } from "react";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface ProductListCardProps {
     id: string;
@@ -22,6 +22,7 @@ interface ProductListCardProps {
 }
 
 export default function ProductListCard({
+    id,
     title,
     price,
     originalPrice,
@@ -33,16 +34,29 @@ export default function ProductListCard({
     badge,
     href,
 }: ProductListCardProps) {
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const { isInWishlist, toggleWishlist } = useWishlist();
+    const productId = parseInt(id);
+    const isWishlisted = isInWishlist(productId);
+
+    const handleWishlistClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleWishlist({
+            productId,
+            title,
+            price,
+            originalPrice: originalPrice || price,
+            image,
+            slug: href.replace('/products/', ''),
+            inStock: true,
+        });
+    };
 
     return (
         <Link href={href} className="bg-white p-3 sm:p-4 rounded-lg hover:shadow-lg transition-all border border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-4 relative group cursor-pointer">
             {/* Mobile: Heart icon at top right */}
             <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    setIsWishlisted(!isWishlisted);
-                }}
+                onClick={handleWishlistClick}
                 className="absolute top-3 right-3 sm:hidden z-10 p-2 bg-white hover:bg-gray-100 rounded-full transition cursor-pointer shadow-sm"
             >
                 <Heart
@@ -131,10 +145,7 @@ export default function ProductListCard({
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">Upto Tk 220 Off</p>
                 </div>
                 <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        setIsWishlisted(!isWishlisted);
-                    }}
+                    onClick={handleWishlistClick}
                     className="p-2 hover:bg-gray-100 rounded-full transition cursor-pointer"
                 >
                     <Heart

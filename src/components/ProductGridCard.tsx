@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Star, Package } from "lucide-react";
-import { useState } from "react";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface ProductGridCardProps {
     id: string;
@@ -19,6 +19,7 @@ interface ProductGridCardProps {
 }
 
 export default function ProductGridCard({
+    id,
     title,
     price,
     originalPrice,
@@ -29,15 +30,28 @@ export default function ProductGridCard({
 
     href,
 }: ProductGridCardProps) {
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const { isInWishlist, toggleWishlist } = useWishlist();
+    const productId = parseInt(id);
+    const isWishlisted = isInWishlist(productId);
+
+    const handleWishlistClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleWishlist({
+            productId,
+            title,
+            price,
+            originalPrice: originalPrice || price,
+            image,
+            slug: href.replace('/products/', ''),
+            inStock: true,
+        });
+    };
 
     return (
         <Link href={href} className="bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all border border-gray-200 group relative cursor-pointer">
             <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    setIsWishlisted(!isWishlisted);
-                }}
+                onClick={handleWishlistClick}
                 className="absolute top-2 right-2 z-10 p-2 bg-white hover:bg-gray-100 rounded-full shadow-md transition cursor-pointer"
             >
                 <Heart
