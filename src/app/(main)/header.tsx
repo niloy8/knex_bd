@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ShoppingCart, Search, Heart, UserRound, Menu, X, Loader2, Package } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -23,6 +25,12 @@ export default function Header() {
     const [suggestions, setSuggestions] = useState<SearchProduct[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
+
+    const { getCartCount } = useCart();
+    const { items: wishlistItems } = useWishlist();
+
+    const cartCount = getCartCount();
+    const wishlistCount = wishlistItems.length;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -93,7 +101,7 @@ export default function Header() {
                             onFocus={() => searchQuery && setShowSuggestions(true)}
                             className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <button className="absolute right-0 top-0 bottom-0 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-r-lg hover:from-blue-700 hover:to-indigo-700">
+                        <button className="absolute right-0 top-0 bottom-0 px-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-r-lg hover:from-blue-700 hover:to-indigo-700">
                             <Search size={20} />
                         </button>
 
@@ -140,11 +148,38 @@ export default function Header() {
 
                     <div className="hidden md:flex items-center gap-6">
                         <Link href="/account" className="flex flex-col items-center gap-1 hover:text-blue-600"><UserRound size={20} /><span className="text-xs font-medium">Account</span></Link>
-                        <Link href="/cart" className="flex flex-col items-center gap-1 hover:text-blue-600"><ShoppingCart size={20} /><span className="text-xs font-medium">Cart</span></Link>
-                        <Link href="/wishlist" className="flex flex-col items-center gap-1 hover:text-blue-600"><Heart size={20} /><span className="text-xs font-medium">Wishlist</span></Link>
+                        <Link href="/cart" className="flex flex-col items-center gap-1 hover:text-blue-600 relative">
+                            <div className="relative">
+                                <ShoppingCart size={20} />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                        {cartCount > 99 ? "99+" : cartCount}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="text-xs font-medium">Cart</span>
+                        </Link>
+                        <Link href="/wishlist" className="flex flex-col items-center gap-1 hover:text-blue-600 relative">
+                            <div className="relative">
+                                <Heart size={20} />
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                        {wishlistCount > 99 ? "99+" : wishlistCount}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="text-xs font-medium">Wishlist</span>
+                        </Link>
                     </div>
 
-                    <Link href="/cart" className="md:hidden"><ShoppingCart size={24} /></Link>
+                    <Link href="/cart" className="md:hidden relative">
+                        <ShoppingCart size={24} />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                {cartCount > 99 ? "99+" : cartCount}
+                            </span>
+                        )}
+                    </Link>
                 </div>
 
                 <div className="md:hidden mt-3 relative">
@@ -155,7 +190,7 @@ export default function Header() {
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="w-full px-4 py-2 pr-12 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button className="absolute right-0 top-0 bottom-0 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-r-lg">
+                    <button className="absolute right-0 top-0 bottom-0 px-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-r-lg">
                         <Search size={18} />
                     </button>
 
@@ -209,8 +244,28 @@ export default function Header() {
                 </div>
                 <nav className="p-4 space-y-4">
                     <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg"><UserRound size={20} /><span>Account</span></Link>
-                    <Link href="/wishlist" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg"><Heart size={20} /><span>Wishlist</span></Link>
-                    <Link href="/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg"><ShoppingCart size={20} /><span>Orders</span></Link>
+                    <Link href="/wishlist" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg">
+                        <div className="relative">
+                            <Heart size={20} />
+                            {wishlistCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                    {wishlistCount > 99 ? "99+" : wishlistCount}
+                                </span>
+                            )}
+                        </div>
+                        <span>Wishlist</span>
+                    </Link>
+                    <Link href="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg">
+                        <div className="relative">
+                            <ShoppingCart size={20} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                    {cartCount > 99 ? "99+" : cartCount}
+                                </span>
+                            )}
+                        </div>
+                        <span>Cart</span>
+                    </Link>
                 </nav>
             </div>
         </header>

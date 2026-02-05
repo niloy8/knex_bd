@@ -5,7 +5,7 @@ import CartItem from "@/components/CartItem";
 import CheckoutModal from "@/components/CheckoutModal";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/context/CartContext";
 
 export default function CartPage() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);

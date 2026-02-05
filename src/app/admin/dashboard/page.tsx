@@ -199,7 +199,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Getting Started */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                <div className="bg-linear-30 from-blue-500 to-blue-600 rounded-lg p-6 text-white">
                     <h3 className="text-lg font-semibold mb-2">Getting Started</h3>
                     <p className="text-blue-100 text-sm mb-4">
                         Your store is ready! Start by adding products to your catalog.

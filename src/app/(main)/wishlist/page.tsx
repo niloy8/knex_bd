@@ -3,8 +3,8 @@
 import { Trash2, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/context/WishlistContext";
+import { useCart } from "@/context/CartContext";
 
 export default function WishlistPage() {
     const { items: wishlistItems, isLoaded, removeFromWishlist } = useWishlist();
