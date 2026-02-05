@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronRight, Frown } from "lucide-react";
 import Link from "next/link";
@@ -53,50 +53,65 @@ export default function ProductsPage() {
 
     const itemsPerPage = 12;
 
-    const fetchProducts = useCallback(async () => {
-        setLoading(true);
-        const params = new URLSearchParams();
-        if (categoryParam) params.set("category", categoryParam);
-        if (subcategoryParam) params.set("subcategory", subcategoryParam);
-        if (selectedBrands.length > 0) params.set("brand", selectedBrands[0]);
-        if (sortBy === "price -- low to high") params.set("sort", "price-low");
-        else if (sortBy === "price -- high to low") params.set("sort", "price-high");
-        params.set("page", currentPage.toString());
-        params.set("limit", itemsPerPage.toString());
+    useEffect(() => {
+        let isMounted = true;
 
-        try {
-            const res = await fetch(`${API}/products?${params}`);
-            const data = await res.json();
-            setProducts(data.products || []);
-            setTotalProducts(data.total || 0);
-        } catch (e) { console.error(e); }
-        setLoading(false);
+        const loadProducts = async () => {
+            setLoading(true);
+            const params = new URLSearchParams();
+            if (categoryParam) params.set("category", categoryParam);
+            if (subcategoryParam) params.set("subcategory", subcategoryParam);
+            if (selectedBrands.length > 0) params.set("brand", selectedBrands[0]);
+            if (sortBy === "price -- low to high") params.set("sort", "price-low");
+            else if (sortBy === "price -- high to low") params.set("sort", "price-high");
+            params.set("page", currentPage.toString());
+            params.set("limit", itemsPerPage.toString());
+
+            try {
+                const res = await fetch(`${API}/products?${params}`);
+                const data = await res.json();
+                if (isMounted) {
+                    setProducts(data.products || []);
+                    setTotalProducts(data.total || 0);
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        };
+
+        loadProducts();
+
+        return () => { isMounted = false; };
     }, [categoryParam, subcategoryParam, selectedBrands, sortBy, currentPage]);
 
-    const fetchBrands = useCallback(async () => {
-        const params = new URLSearchParams();
-        if (categoryParam) params.set("category", categoryParam);
-        if (subcategoryParam) params.set("subcategory", subcategoryParam);
-
-        try {
-            const res = await fetch(`${API}/products/brands?${params}`);
-            const data = await res.json();
-            setBrands(Array.isArray(data) ? data : []);
-        } catch (e) {
-            console.error(e);
-            setBrands([]);
-        }
-    }, [categoryParam, subcategoryParam]);
-
     useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+        let isMounted = true;
 
-    useEffect(() => {
-        fetchBrands();
+        const loadBrands = async () => {
+            const params = new URLSearchParams();
+            if (categoryParam) params.set("category", categoryParam);
+            if (subcategoryParam) params.set("subcategory", subcategoryParam);
+
+            try {
+                const res = await fetch(`${API}/products/brands?${params}`);
+                const data = await res.json();
+                if (isMounted) {
+                    setBrands(Array.isArray(data) ? data : []);
+                }
+            } catch (e) {
+                console.error(e);
+                if (isMounted) setBrands([]);
+            }
+        };
+
+        loadBrands();
         setSelectedBrands([]);
         setCurrentPage(1);
-    }, [fetchBrands]);
+
+        return () => { isMounted = false; };
+    }, [categoryParam, subcategoryParam]);
 
     const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
