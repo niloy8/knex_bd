@@ -86,8 +86,15 @@ export default function CategoryNav() {
             className="bg-white border-b border-gray-200 relative"
             aria-label="Category navigation"
         >
-            <div className="max-w-7xl mx-auto">
-                <div className="flex items-center justify-center overflow-x-auto scrollbar-hide">
+            <div className="max-w-7xl mx-auto px-2 sm:px-0">
+                <div
+                    className="flex items-center lg:justify-center overflow-x-auto scrollbar-hide"
+                    style={{
+                        WebkitOverflowScrolling: 'touch',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
+                    }}
+                >
                     {categories.map((category) => {
                         const subs = getSubcategories(category);
                         const isActive = activeDropdown === category.slug;
@@ -102,8 +109,8 @@ export default function CategoryNav() {
                                 <Link
                                     href={`/products?category=${category.slug}`}
                                     className={`
-                                        flex items-center gap-1 px-4 py-3
-                                        text-sm font-medium whitespace-nowrap
+                                        flex items-center gap-1 px-3 sm:px-4 py-3
+                                        text-xs sm:text-sm font-medium whitespace-nowrap
                                         transition-colors duration-200
                                         border-b-2
                                         ${isActive
@@ -115,7 +122,7 @@ export default function CategoryNav() {
                                     <span>{category.name}</span>
                                     {subs.length > 0 && (
                                         <ChevronDown
-                                            className={`w-3.5 h-3.5 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
+                                            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
                                         />
                                     )}
                                 </Link>

@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes fillBar {
   from {
     transform: scaleX(0);
