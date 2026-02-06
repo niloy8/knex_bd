@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, User, Phone, Mail, MapPin, Wallet, LogIn } from "lucide-react";
+import { X, User, Phone, Mail, MapPin, Wallet, LogIn, Loader2, CheckCircle, XCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -12,10 +16,25 @@ interface CheckoutModalProps {
 }
 
 export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalProps) {
+    const router = useRouter();
+    const { refreshCart } = useCart();
+
     const [location, setLocation] = useState<"inside" | "outside">("inside");
     const [paymentMethod, setPaymentMethod] = useState<"cod" /* | "bkash" | "nagad" */>("cod");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [checkingAuth, setCheckingAuth] = useState(true);
+
+    // Form state
+    const [customerName, setCustomerName] = useState("");
+    const [customerPhone, setCustomerPhone] = useState("");
+    const [customerEmail, setCustomerEmail] = useState("");
+    const [deliveryAddress, setDeliveryAddress] = useState("");
+
+    // Submission state
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [orderSuccess, setOrderSuccess] = useState(false);
+    const [orderNumber, setOrderNumber] = useState("");
+    const [error, setError] = useState("");
 
     // Check if user is logged in
     useEffect(() => {
@@ -23,6 +42,8 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
             const token = localStorage.getItem("userToken");
             setIsLoggedIn(!!token);
             setCheckingAuth(false);
+            setOrderSuccess(false);
+            setError("");
         }
     }, [isOpen]);
 
@@ -30,6 +51,71 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
 
     const deliveryCharge = location === "inside" ? 80 : 150;
     const finalTotal = total + deliveryCharge;
+
+    // Handle order submission
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+
+        // Validation
+        if (!customerName.trim()) {
+            setError("Please enter your name");
+            return;
+        }
+        if (!customerPhone.trim()) {
+            setError("Please enter your phone number");
+            return;
+        }
+        if (!deliveryAddress.trim()) {
+            setError("Please enter your delivery address");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const token = localStorage.getItem("userToken");
+            const res = await fetch(`${API}/orders`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    customerName: customerName.trim(),
+                    customerEmail: customerEmail.trim(),
+                    customerPhone: customerPhone.trim(),
+                    deliveryAddress: deliveryAddress.trim(),
+                    deliveryArea: location,
+                    paymentMethod,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to place order");
+            }
+
+            // Success!
+            setOrderNumber(data.order.orderNumber);
+            setOrderSuccess(true);
+
+            // Refresh cart to clear items
+            await refreshCart();
+
+            // Reset form
+            setCustomerName("");
+            setCustomerPhone("");
+            setCustomerEmail("");
+            setDeliveryAddress("");
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to place order");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // Show login prompt if not logged in
     if (!checkingAuth && !isLoggedIn) {
@@ -85,6 +171,51 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
         );
     }
 
+    // Show success message
+    if (orderSuccess) {
+        return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative text-center">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle size={48} className="text-green-600" />
+                    </div>
+
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Order Placed!</h2>
+                    <p className="text-gray-600 mb-2">
+                        Your order has been placed successfully.
+                    </p>
+                    <p className="text-lg font-semibold text-blue-600 mb-6">
+                        Order Number: {orderNumber}
+                    </p>
+                    <p className="text-sm text-gray-500 mb-6">
+                        We will contact you shortly to confirm your order.
+                    </p>
+
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => {
+                                onClose();
+                                router.push("/myprofile?tab=orders");
+                            }}
+                            className="block w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition cursor-pointer"
+                        >
+                            View My Orders
+                        </button>
+                        <button
+                            onClick={() => {
+                                onClose();
+                                router.push("/");
+                            }}
+                            className="block w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition cursor-pointer"
+                        >
+                            Continue Shopping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 relative max-h-[90vh] overflow-y-auto">
@@ -102,20 +233,41 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     </div>
                 </div>
 
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                {error && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                        <XCircle size={20} className="text-red-500 shrink-0" />
+                        <p className="text-sm text-red-600">{error}</p>
+                    </div>
+                )}
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
                     {/* Personal Info - Side by Side */}
                     <div className="grid md:grid-cols-2 gap-3">
                         <label className="block">
                             <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-blue-400 transition">
                                 <User size={18} className="text-blue-500 shrink-0" />
-                                <input type="text" placeholder="Full Name" required className="w-full bg-transparent outline-none text-sm" />
+                                <input
+                                    type="text"
+                                    placeholder="Full Name"
+                                    required
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    className="w-full bg-transparent outline-none text-sm"
+                                />
                             </div>
                         </label>
 
                         <label className="block">
                             <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-green-400 transition">
                                 <Phone size={18} className="text-green-500 shrink-0" />
-                                <input type="tel" placeholder="Phone Number" required className="w-full bg-transparent outline-none text-sm" />
+                                <input
+                                    type="tel"
+                                    placeholder="Phone Number"
+                                    required
+                                    value={customerPhone}
+                                    onChange={(e) => setCustomerPhone(e.target.value)}
+                                    className="w-full bg-transparent outline-none text-sm"
+                                />
                             </div>
                         </label>
                     </div>
@@ -124,7 +276,13 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     <label className="block">
                         <div className="flex items-center gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-yellow-400 transition">
                             <Mail size={18} className="text-yellow-600 shrink-0" />
-                            <input type="email" placeholder="Email Address" required className="w-full bg-transparent outline-none text-sm" />
+                            <input
+                                type="email"
+                                placeholder="Email Address (Optional)"
+                                value={customerEmail}
+                                onChange={(e) => setCustomerEmail(e.target.value)}
+                                className="w-full bg-transparent outline-none text-sm"
+                            />
                         </div>
                     </label>
 
@@ -132,7 +290,14 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                     <label className="block">
                         <div className="flex items-start gap-3 px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-blue-400 transition">
                             <MapPin size={18} className="text-blue-500 mt-1 shrink-0" />
-                            <textarea placeholder="Delivery Address" required className="w-full bg-transparent outline-none text-sm resize-none" rows={2} />
+                            <textarea
+                                placeholder="Delivery Address"
+                                required
+                                value={deliveryAddress}
+                                onChange={(e) => setDeliveryAddress(e.target.value)}
+                                className="w-full bg-transparent outline-none text-sm resize-none"
+                                rows={2}
+                            />
                         </div>
                     </label>
 
@@ -171,28 +336,6 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                                     <p className="text-xs text-gray-500">Pay when you receive</p>
                                 </div>
                             </label>
-
-                            {/* bKash - Commented Out */}
-                            {/*
-                            <label className="flex items-center gap-3 px-4 py-4 border-2 rounded-xl cursor-pointer hover:border-pink-400 transition" style={{ borderColor: paymentMethod === "bkash" ? "#e91e63" : "#e5e7eb", backgroundColor: paymentMethod === "bkash" ? "#fce7f3" : "transparent" }}>
-                                <input type="radio" name="payment" checked={paymentMethod === "bkash"} onChange={() => setPaymentMethod("bkash")} className="w-4 h-4" />
-                                <div>
-                                    <p className="font-semibold text-sm text-pink-600">bKash</p>
-                                    <p className="text-xs text-gray-500">Pay with bKash</p>
-                                </div>
-                            </label>
-                            */}
-
-                            {/* Nagad - Commented Out */}
-                            {/*
-                            <label className="flex items-center gap-3 px-4 py-4 border-2 rounded-xl cursor-pointer hover:border-orange-400 transition" style={{ borderColor: paymentMethod === "nagad" ? "#f97316" : "#e5e7eb", backgroundColor: paymentMethod === "nagad" ? "#ffedd5" : "transparent" }}>
-                                <input type="radio" name="payment" checked={paymentMethod === "nagad"} onChange={() => setPaymentMethod("nagad")} className="w-4 h-4" />
-                                <div>
-                                    <p className="font-semibold text-sm text-orange-600">Nagad</p>
-                                    <p className="text-xs text-gray-500">Pay with Nagad</p>
-                                </div>
-                            </label>
-                            */}
                         </div>
                     </div>
 
@@ -212,8 +355,19 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-linear-to-r from-blue-600 to-green-600 text-white p-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition cursor-pointer mt-2">
-                        Place Order
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-linear-to-r from-blue-600 to-green-600 text-white p-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition cursor-pointer mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                Placing Order...
+                            </>
+                        ) : (
+                            "Place Order"
+                        )}
                     </button>
                 </form>
             </div>
