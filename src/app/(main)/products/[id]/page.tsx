@@ -16,6 +16,8 @@ import {
     Loader2,
     Package
 } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -94,6 +96,13 @@ export default function SingleProductPage() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [submittingReview, setSubmittingReview] = useState(false);
+
+    // Cart and Wishlist
+    const { addToCart, isInCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const [addingToCart, setAddingToCart] = useState(false);
+    const [addedToCart, setAddedToCart] = useState(false);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
 
     const fetchProduct = useCallback(async () => {
         try {
@@ -227,6 +236,91 @@ export default function SingleProductPage() {
             alert("Failed to submit review");
         } finally {
             setSubmittingReview(false);
+        }
+    };
+
+    // Handle Add to Cart
+    const handleAddToCart = async () => {
+        if (!product) return;
+        setAddingToCart(true);
+        try {
+            await addToCart({
+                productId: product.id,
+                title: product.title,
+                price: selectedVariant?.price || product.price,
+                image: selectedVariant?.image || product.image,
+                slug: product.slug,
+            }, quantity);
+            setAddedToCart(true);
+            setTimeout(() => setAddedToCart(false), 2000);
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+        } finally {
+            setAddingToCart(false);
+        }
+    };
+
+    // Handle Buy Now - Add to cart and go to cart
+    const handleBuyNow = async () => {
+        if (!product) return;
+        setAddingToCart(true);
+        try {
+            await addToCart({
+                productId: product.id,
+                title: product.title,
+                price: selectedVariant?.price || product.price,
+                image: selectedVariant?.image || product.image,
+                slug: product.slug,
+            }, quantity);
+            router.push("/cart");
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+        } finally {
+            setAddingToCart(false);
+        }
+    };
+
+    // Handle Wishlist Toggle
+    const handleWishlistToggle = async () => {
+        if (!product) return;
+        setWishlistLoading(true);
+        try {
+            await toggleWishlist({
+                productId: product.id,
+                title: product.title,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                image: product.image,
+                slug: product.slug,
+                inStock: product.inStock,
+            });
+        } catch (error) {
+            console.error("Error toggling wishlist:", error);
+        } finally {
+            setWishlistLoading(false);
+        }
+    };
+
+    // Handle Share
+    const handleShare = async () => {
+        if (!product) return;
+        const shareData = {
+            title: product.title,
+            text: `Check out ${product.title} - Tk ${product.price.toLocaleString()}`,
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback: copy to clipboard
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Link copied to clipboard!");
+            }
+        } catch (error) {
+            // User cancelled or error
+            console.log("Share cancelled or failed:", error);
         }
     };
 
@@ -497,23 +591,61 @@ export default function SingleProductPage() {
 
                                     {/* Add to Cart & Buy Now */}
                                     <div className="flex flex-1 gap-3">
-                                        <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200">
-                                            <ShoppingCart className="w-5 h-5" />
-                                            Add to Cart
+                                        <button
+                                            onClick={handleAddToCart}
+                                            disabled={addingToCart || !product.inStock}
+                                            className={`flex-1 font-semibold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg ${addedToCart
+                                                    ? "bg-green-600 text-white shadow-green-200"
+                                                    : isInCart(product.id)
+                                                        ? "bg-blue-700 hover:bg-blue-800 text-white shadow-blue-200"
+                                                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"
+                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        >
+                                            {addingToCart ? (
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                            ) : addedToCart ? (
+                                                <>
+                                                    <Check className="w-5 h-5" />
+                                                    Added!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ShoppingCart className="w-5 h-5" />
+                                                    {isInCart(product.id) ? "Add More" : "Add to Cart"}
+                                                </>
+                                            )}
                                         </button>
-                                        <button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-200">
-                                            Buy Now
+                                        <button
+                                            onClick={handleBuyNow}
+                                            disabled={addingToCart || !product.inStock}
+                                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {addingToCart ? <Loader2 className="w-5 h-5 animate-spin" /> : "Buy Now"}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Meta Actions */}
                                 <div className="flex items-center gap-6 text-sm text-gray-500">
-                                    <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                                        <Heart className="w-4 h-4" />
-                                        Add to Wishlist
+                                    <button
+                                        onClick={handleWishlistToggle}
+                                        disabled={wishlistLoading}
+                                        className={`flex items-center gap-2 transition-colors ${isInWishlist(product.id)
+                                                ? "text-red-500 hover:text-red-600"
+                                                : "hover:text-blue-600"
+                                            } disabled:opacity-50`}
+                                    >
+                                        {wishlistLoading ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+                                        )}
+                                        {isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                                     </button>
-                                    <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                                    <button
+                                        onClick={handleShare}
+                                        className="flex items-center gap-2 hover:text-blue-600 transition-colors"
+                                    >
                                         <Share2 className="w-4 h-4" />
                                         Share Product
                                     </button>
@@ -548,8 +680,20 @@ export default function SingleProductPage() {
                                 <div className="text-sm text-gray-500">Tk {product.price.toLocaleString()}</div>
                                 <div className="text-xs text-gray-400 line-through">Tk {product.originalPrice.toLocaleString()}</div>
                             </div>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg">Add</button>
-                            <button className="bg-green-600 text-white px-4 py-2 rounded-lg">Buy</button>
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={addingToCart || !product.inStock}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                            >
+                                {addingToCart ? <Loader2 className="w-4 h-4 animate-spin" /> : addedToCart ? <Check className="w-4 h-4" /> : "Add"}
+                            </button>
+                            <button
+                                onClick={handleBuyNow}
+                                disabled={addingToCart || !product.inStock}
+                                className="bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                            >
+                                Buy
+                            </button>
                         </div>
                     </div>
 
