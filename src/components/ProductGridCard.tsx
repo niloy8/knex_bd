@@ -71,7 +71,7 @@ export default function ProductGridCard({
             </div>
 
             <div className="p-4">
-                <h3 className="font-medium text-gray-800 mb-2 group-hover:text-blue-600 line-clamp-2 min-h-[3rem]">
+                <h3 className="font-medium text-gray-800 mb-2 group-hover:text-blue-600 line-clamp-2 min-h-12">
                     {title}
                 </h3>
                 <div className="flex items-center gap-2 mb-2">

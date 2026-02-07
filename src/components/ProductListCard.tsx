@@ -30,7 +30,7 @@ export default function ProductListCard({
     rating,
     totalRatings,
     image,
-    features,
+    // features,
     badge,
     href,
 }: ProductListCardProps) {
@@ -66,7 +66,7 @@ export default function ProductListCard({
             </button>
 
             {/* Product Image */}
-            <div className="w-full sm:w-40 md:w-48 h-40 sm:h-40 md:h-48 flex-shrink-0 bg-gray-50 rounded-lg relative">
+            <div className="w-full sm:w-40 md:w-48 h-40 sm:h-40 md:h-48 shrink-0 bg-gray-50 rounded-lg relative">
                 <div className="w-full h-full flex items-center justify-center relative">
                     {image ? (
                         <Image src={image} alt={title} fill className="object-contain" unoptimized />
@@ -95,14 +95,6 @@ export default function ProductListCard({
                             {totalRatings.toLocaleString()} Ratings
                         </span>
                     </div>
-                    <ul className="hidden sm:block space-y-1 mb-3">
-                        {features.slice(0, 3).map((feature, index) => (
-                            <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                                <span className="text-gray-400">•</span>
-                                <span className="line-clamp-1">{feature}</span>
-                            </li>
-                        ))}
-                    </ul>
                 </div>
 
                 {/* Mobile Price Section */}
@@ -126,7 +118,7 @@ export default function ProductListCard({
             </div>
 
             {/* Desktop Price Section */}
-            <div className="hidden sm:flex flex-col justify-between items-end min-w-[160px] md:min-w-[200px]">
+            <div className="hidden sm:flex flex-col justify-between items-end min-w-40 md:min-w-[200px]">
                 <div className="text-right">
                     <div className="flex items-center justify-end gap-2 mb-1">
                         <span className="text-xl md:text-2xl font-semibold">Tk {price.toLocaleString()}</span>
