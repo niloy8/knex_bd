@@ -129,9 +129,9 @@ export default function AdminEditProduct() {
             setDescription(p.description || "");
             setTags(p.tags || []);
 
-            // ProductVariants component uses {name, values[]} format - initialize empty
-            // This is for RAM/Storage type variants, not color swatches
-            setVariants([]);
+            // Load customVariants for RAM/Storage type variants
+            const customVariantsData = p.customVariants || [];
+            setVariants(Array.isArray(customVariantsData) ? customVariantsData : []);
 
             // Map API variants (ProductVariant model) to imageSwatch format for color/image swatches
             const imageSwatchData = (p.variants || []).map((v: { name: string; image: string; images?: string[] }) => ({

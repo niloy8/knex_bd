@@ -4,6 +4,13 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+export interface SelectedVariant {
+    id: number;
+    name: string;
+    image: string;
+    price?: number;
+}
+
 export interface CartItem {
     id: string;
     productId: number;
@@ -12,6 +19,10 @@ export interface CartItem {
     image: string;
     quantity: number;
     slug?: string;
+    selectedColor?: string;
+    selectedSize?: string;
+    selectedVariant?: SelectedVariant;
+    customSelections?: Record<string, string>;
 }
 
 interface CartContextType {
@@ -19,8 +30,8 @@ interface CartContextType {
     isLoaded: boolean;
     isLoggedIn: boolean;
     addToCart: (item: Omit<CartItem, "quantity" | "id">, quantity?: number) => Promise<void>;
-    removeFromCart: (productId: number) => Promise<void>;
-    updateQuantity: (productId: number, quantity: number) => Promise<void>;
+    removeFromCart: (itemId: string) => Promise<void>;
+    updateQuantity: (itemId: string, quantity: number) => Promise<void>;
     clearCart: () => Promise<void>;
     getCartTotal: () => number;
     getCartCount: () => number;
@@ -124,6 +135,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     items: guestItems.map(item => ({
                         productId: item.productId,
                         quantity: item.quantity,
+                        selectedColor: item.selectedColor,
+                        selectedSize: item.selectedSize,
+                        selectedVariant: item.selectedVariant,
+                        customSelections: item.customSelections,
                     })),
                 }),
             });
@@ -145,7 +160,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ productId: item.productId, quantity }),
+                    body: JSON.stringify({
+                        productId: item.productId,
+                        quantity,
+                        selectedColor: item.selectedColor,
+                        selectedSize: item.selectedSize,
+                        selectedVariant: item.selectedVariant,
+                        customSelections: item.customSelections,
+                    }),
                 });
                 await loadCart();
             } catch (error) {
@@ -153,16 +175,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
         } else {
             setItems(prev => {
-                const existing = prev.find(i => i.productId === item.productId);
+                // For guest cart, check productId + color + size combo
+                const existing = prev.find(i =>
+                    i.productId === item.productId &&
+                    i.selectedColor === item.selectedColor &&
+                    i.selectedSize === item.selectedSize
+                );
                 let newItems: CartItem[];
                 if (existing) {
                     newItems = prev.map(i =>
-                        i.productId === item.productId
+                        i.id === existing.id
                             ? { ...i, quantity: i.quantity + quantity }
                             : i
                     );
                 } else {
-                    newItems = [...prev, { ...item, id: item.productId.toString(), quantity }];
+                    const newId = `${item.productId}-${item.selectedColor || ''}-${item.selectedSize || ''}-${Date.now()}`;
+                    newItems = [...prev, { ...item, id: newId, quantity }];
                 }
                 saveGuestCart(newItems);
                 return newItems;
@@ -170,12 +198,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [loadCart]);
 
-    const removeFromCart = useCallback(async (productId: number) => {
+    const removeFromCart = useCallback(async (itemId: string) => {
         const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
 
         if (token) {
             try {
-                await fetch(`${API}/cart/${productId}`, {
+                await fetch(`${API}/cart/${itemId}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -185,20 +213,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
         } else {
             setItems(prev => {
-                const newItems = prev.filter(item => item.productId !== productId);
+                const newItems = prev.filter(item => item.id !== itemId);
                 saveGuestCart(newItems);
                 return newItems;
             });
         }
     }, [loadCart]);
 
-    const updateQuantity = useCallback(async (productId: number, quantity: number) => {
+    const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
         if (quantity < 1) return;
         const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
 
         if (token) {
             try {
-                await fetch(`${API}/cart/${productId}`, {
+                await fetch(`${API}/cart/${itemId}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
@@ -213,7 +241,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         } else {
             setItems(prev => {
                 const newItems = prev.map(item =>
-                    item.productId === productId ? { ...item, quantity } : item
+                    item.id === itemId ? { ...item, quantity } : item
                 );
                 saveGuestCart(newItems);
                 return newItems;

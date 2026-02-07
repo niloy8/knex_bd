@@ -3,12 +3,23 @@
 import Image from "next/image";
 import { Minus, Plus, Trash2, Package } from "lucide-react";
 
+interface SelectedVariant {
+    id: number;
+    name: string;
+    image: string;
+    price?: number;
+}
+
 interface CartItemProps {
     id: string;
     title: string;
     price: number;
     image: string;
     quantity: number;
+    selectedColor?: string;
+    selectedSize?: string;
+    selectedVariant?: SelectedVariant;
+    customSelections?: Record<string, string>;
     onQuantityChange: (id: string, qty: number) => void;
     onRemove: (id: string) => void;
 }
@@ -19,9 +30,29 @@ export default function CartItem({
     price,
     image,
     quantity,
+    selectedColor,
+    selectedSize,
+    selectedVariant,
+    customSelections,
     onQuantityChange,
     onRemove,
 }: CartItemProps) {
+    // Build variant display text
+    const getVariantText = () => {
+        const parts: string[] = [];
+        if (selectedVariant?.name) parts.push(selectedVariant.name);
+        if (selectedColor) parts.push(selectedColor);
+        if (selectedSize) parts.push(`Size: ${selectedSize}`);
+        if (customSelections) {
+            Object.entries(customSelections).forEach(([key, value]) => {
+                parts.push(`${key}: ${value}`);
+            });
+        }
+        return parts.join(" | ");
+    };
+
+    const variantText = getVariantText();
+
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-gray-200 last:border-0">
             {/* Product Image & Info */}
@@ -35,8 +66,11 @@ export default function CartItem({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 uppercase mb-1">Shirt</p>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Product</p>
                     <h4 className="font-medium text-sm sm:text-base text-gray-900 truncate">{title}</h4>
+                    {variantText && (
+                        <p className="text-xs text-blue-600 mt-0.5">{variantText}</p>
+                    )}
                     <p className="text-xs sm:hidden text-gray-600 mt-1">Tk {price.toLocaleString()} each</p>
                 </div>
             </div>

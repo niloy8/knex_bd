@@ -38,6 +38,12 @@ interface ProductVariant {
     stock: number;
 }
 
+interface CustomVariant {
+    name: string;
+    values: string[];
+    prices?: { [key: string]: number };
+}
+
 interface Product {
     id: number;
     title: string;
@@ -51,6 +57,8 @@ interface Product {
     image: string;
     images: string[];
     features: string[];
+    tags: string[];
+    customVariants: CustomVariant[];
     description: string;
     inStock: boolean;
     stockQuantity: number;
@@ -88,6 +96,7 @@ export default function SingleProductPage() {
     const [selectedColor, setSelectedColor] = useState<string>("");
     const [selectedSize, setSelectedSize] = useState<string>("");
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const [customSelections, setCustomSelections] = useState<Record<string, string>>({});
     const [activeTab, setActiveTab] = useState("description");
 
     // Review form state
@@ -117,6 +126,17 @@ export default function SingleProductPage() {
             // Set default selections
             if (data.colors?.length) setSelectedColor(data.colors[0]);
             if (data.sizes?.length) setSelectedSize(data.sizes[0]);
+
+            // Initialize custom variant selections with first value of each
+            if (data.customVariants?.length) {
+                const initialSelections: Record<string, string> = {};
+                data.customVariants.forEach((cv: CustomVariant) => {
+                    if (cv.values?.length) {
+                        initialSelections[cv.name] = cv.values[0];
+                    }
+                });
+                setCustomSelections(initialSelections);
+            }
 
             // Don't auto-select variant - let user click to choose
             // This shows main product images first, then variant images on click
@@ -250,6 +270,15 @@ export default function SingleProductPage() {
                 price: selectedVariant?.price || product.price,
                 image: selectedVariant?.image || product.image,
                 slug: product.slug,
+                selectedColor: selectedColor || undefined,
+                selectedSize: selectedSize || undefined,
+                selectedVariant: selectedVariant ? {
+                    id: selectedVariant.id,
+                    name: selectedVariant.name,
+                    image: selectedVariant.image,
+                    price: selectedVariant.price
+                } : undefined,
+                customSelections: Object.keys(customSelections).length > 0 ? customSelections : undefined,
             }, quantity);
             setAddedToCart(true);
             setTimeout(() => setAddedToCart(false), 2000);
@@ -271,6 +300,15 @@ export default function SingleProductPage() {
                 price: selectedVariant?.price || product.price,
                 image: selectedVariant?.image || product.image,
                 slug: product.slug,
+                selectedColor: selectedColor || undefined,
+                selectedSize: selectedSize || undefined,
+                selectedVariant: selectedVariant ? {
+                    id: selectedVariant.id,
+                    name: selectedVariant.name,
+                    image: selectedVariant.image,
+                    price: selectedVariant.price
+                } : undefined,
+                customSelections: Object.keys(customSelections).length > 0 ? customSelections : undefined,
             }, quantity);
             router.push("/cart");
         } catch (error) {
@@ -565,6 +603,29 @@ export default function SingleProductPage() {
                                     </div>
                                 )}
 
+                                {/* Custom Variants (RAM, Storage, etc.) */}
+                                {(product.customVariants?.length ?? 0) > 0 && product.customVariants?.map((variant) => (
+                                    <div key={variant.name} className="mb-6">
+                                        <span className="block text-sm font-medium text-gray-900 mb-3">
+                                            {variant.name}: <span className="text-gray-500 font-normal">{customSelections[variant.name] || variant.values?.[0]}</span>
+                                        </span>
+                                        <div className="flex flex-wrap gap-3">
+                                            {variant.values?.map((value) => (
+                                                <button
+                                                    key={value}
+                                                    onClick={() => setCustomSelections(prev => ({ ...prev, [variant.name]: value }))}
+                                                    className={`min-w-16 h-10 px-4 rounded-lg border font-medium text-sm transition-all ${customSelections[variant.name] === value
+                                                        ? "border-blue-600 bg-blue-50 text-blue-600"
+                                                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                                                        }`}
+                                                >
+                                                    {value}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
                                 {/* Actions */}
                                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
                                     {/* Quantity */}
@@ -595,10 +656,10 @@ export default function SingleProductPage() {
                                             onClick={handleAddToCart}
                                             disabled={addingToCart || !product.inStock}
                                             className={`flex-1 font-semibold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg ${addedToCart
-                                                    ? "bg-green-600 text-white shadow-green-200"
-                                                    : isInCart(product.id)
-                                                        ? "bg-blue-700 hover:bg-blue-800 text-white shadow-blue-200"
-                                                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"
+                                                ? "bg-green-600 text-white shadow-green-200"
+                                                : isInCart(product.id)
+                                                    ? "bg-blue-700 hover:bg-blue-800 text-white shadow-blue-200"
+                                                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"
                                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                                         >
                                             {addingToCart ? (
@@ -631,8 +692,8 @@ export default function SingleProductPage() {
                                         onClick={handleWishlistToggle}
                                         disabled={wishlistLoading}
                                         className={`flex items-center gap-2 transition-colors ${isInWishlist(product.id)
-                                                ? "text-red-500 hover:text-red-600"
-                                                : "hover:text-blue-600"
+                                            ? "text-red-500 hover:text-red-600"
+                                            : "hover:text-blue-600"
                                             } disabled:opacity-50`}
                                     >
                                         {wishlistLoading ? (
@@ -661,11 +722,28 @@ export default function SingleProductPage() {
                                         <span className="w-24 text-gray-500">Category:</span>
                                         <span className="text-blue-600 hover:underline cursor-pointer capitalize">{product.category?.name || "N/A"}</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="w-24 text-gray-500">Tags:</span>
-                                        <span className="text-gray-600">Modern, Electronics, Best Seller</span>
-                                    </div>
+                                    {(product.tags?.length ?? 0) > 0 && (
+                                        <div className="flex">
+                                            <span className="w-24 text-gray-500">Tags:</span>
+                                            <span className="text-gray-600">{product.tags.join(", ")}</span>
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Features */}
+                                {(product.features?.length ?? 0) > 0 && (
+                                    <div className="mt-6 pt-6 border-t border-gray-100">
+                                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Features</h3>
+                                        <ul className="space-y-2">
+                                            {product.features.map((feature, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                                                    <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                                                    <span>{feature}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
 
                             </div>
 
@@ -700,7 +778,7 @@ export default function SingleProductPage() {
                     {/* Tabs Section */}
                     <div className="border-t border-gray-200">
                         <div className="flex border-b border-gray-200 overflow-x-auto">
-                            {["description", "additional info", "reviews"].map((tab) => (
+                            {["description", "reviews"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
@@ -720,20 +798,6 @@ export default function SingleProductPage() {
                                         <div dangerouslySetInnerHTML={{ __html: product.description }} />
                                     ) : (
                                         <p>No description available for this product.</p>
-                                    )}
-                                </div>
-                            )}
-                            {activeTab === "additional info" && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-w-3xl">
-                                    {product.features?.length > 0 ? (
-                                        product.features.map((feature, idx) => (
-                                            <div key={idx} className="flex border-b border-gray-200 py-3">
-                                                <span className="font-medium text-gray-900 w-1/2">{feature.split(':')[0]}</span>
-                                                <span className="text-gray-600 w-1/2">{feature.split(':')[1] || "Yes"}</span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500">No additional information available.</p>
                                     )}
                                 </div>
                             )}

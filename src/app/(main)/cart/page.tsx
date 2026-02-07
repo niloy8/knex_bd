@@ -60,8 +60,12 @@ export default function CartPage() {
                                             price={item.price}
                                             image={item.image}
                                             quantity={item.quantity}
-                                            onQuantityChange={(_, qty) => updateQuantity(item.productId, qty)}
-                                            onRemove={() => removeFromCart(item.productId)}
+                                            selectedColor={item.selectedColor}
+                                            selectedSize={item.selectedSize}
+                                            selectedVariant={item.selectedVariant}
+                                            customSelections={item.customSelections}
+                                            onQuantityChange={(_, qty) => updateQuantity(item.id, qty)}
+                                            onRemove={() => removeFromCart(item.id)}
                                         />
                                     ))}
                                 </div>

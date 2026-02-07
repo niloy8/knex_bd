@@ -17,7 +17,8 @@ import {
     MapPin,
     X,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Trash2
 } from "lucide-react";
 import Image from "next/image";
 
@@ -30,6 +31,10 @@ interface OrderItem {
     price: number;
     quantity: number;
     image: string;
+    selectedColor?: string;
+    selectedSize?: string;
+    selectedVariant?: { id?: number; name?: string; image?: string; price?: number };
+    customSelections?: Record<string, string>;
 }
 
 interface Order {
@@ -80,6 +85,7 @@ export default function AdminOrders() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [deletingOrder, setDeletingOrder] = useState(false);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -148,7 +154,6 @@ export default function AdminOrders() {
                 await fetchOrders();
                 // Update selected order if modal is open
                 if (selectedOrder?.id === orderId) {
-                    const data = await res.json();
                     setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
                 }
             }
@@ -156,6 +161,38 @@ export default function AdminOrders() {
             console.error("Error updating status:", error);
         } finally {
             setUpdatingStatus(false);
+        }
+    };
+
+    const handleDeleteOrder = async (orderId: number) => {
+        if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
+            return;
+        }
+
+        setDeletingOrder(true);
+        try {
+            const token = localStorage.getItem("adminToken");
+            const res = await fetch(`${API}/orders/admin/${orderId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.ok) {
+                // Close modal and refresh orders
+                setIsModalOpen(false);
+                setSelectedOrder(null);
+                await fetchOrders();
+            } else {
+                const error = await res.json();
+                alert(error.error || "Failed to delete order");
+            }
+        } catch (error) {
+            console.error("Error deleting order:", error);
+            alert("Failed to delete order");
+        } finally {
+            setDeletingOrder(false);
         }
     };
 
@@ -326,12 +363,22 @@ export default function AdminOrders() {
                                 <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
                                 <p className="text-sm text-blue-600 font-medium">{selectedOrder.orderNumber}</p>
                             </div>
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => handleDeleteOrder(selectedOrder.id)}
+                                    disabled={deletingOrder}
+                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                    title="Delete Order"
+                                >
+                                    {deletingOrder ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                                </button>
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Modal Body */}
@@ -375,8 +422,8 @@ export default function AdminOrders() {
                                             onClick={() => handleStatusUpdate(selectedOrder.id, status)}
                                             disabled={updatingStatus || selectedOrder.status === status}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${selectedOrder.status === status
-                                                    ? statusColors[status] + " ring-2 ring-offset-2 ring-blue-500"
-                                                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
+                                                ? statusColors[status] + " ring-2 ring-offset-2 ring-blue-500"
+                                                : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
                                                 } disabled:opacity-50`}
                                         >
                                             {statusIcons[status]}
@@ -390,27 +437,44 @@ export default function AdminOrders() {
                             <div>
                                 <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
                                 <div className="border border-gray-200 rounded-xl overflow-hidden">
-                                    {selectedOrder.items.map((item, idx) => (
-                                        <div key={item.id} className={`flex items-center gap-4 p-4 ${idx !== selectedOrder.items.length - 1 ? "border-b border-gray-100" : ""}`}>
-                                            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
-                                                {item.image ? (
-                                                    <Image src={item.image} alt={item.title} fill className="object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <Package className="w-6 h-6 text-gray-400" />
-                                                    </div>
-                                                )}
+                                    {selectedOrder.items.map((item, idx) => {
+                                        // Build variant display
+                                        const variantParts: string[] = [];
+                                        if (item.selectedVariant?.name) variantParts.push(item.selectedVariant.name);
+                                        if (item.selectedColor) variantParts.push(`Color: ${item.selectedColor}`);
+                                        if (item.selectedSize) variantParts.push(`Size: ${item.selectedSize}`);
+                                        if (item.customSelections) {
+                                            Object.entries(item.customSelections).forEach(([key, value]) => {
+                                                variantParts.push(`${key}: ${value}`);
+                                            });
+                                        }
+                                        const variantText = variantParts.join(" | ");
+
+                                        return (
+                                            <div key={item.id} className={`flex items-center gap-4 p-4 ${idx !== selectedOrder.items.length - 1 ? "border-b border-gray-100" : ""}`}>
+                                                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
+                                                    {item.image && item.image.startsWith('http') ? (
+                                                        <Image src={item.image} alt={item.title} fill className="object-cover" unoptimized />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Package className="w-6 h-6 text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-gray-900 truncate">{item.title}</p>
+                                                    {variantText && (
+                                                        <p className="text-sm text-blue-600">{variantText}</p>
+                                                    )}
+                                                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-gray-900">Tk {(item.price * item.quantity).toLocaleString()}</p>
+                                                    <p className="text-sm text-gray-500">Tk {item.price} × {item.quantity}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-gray-900 truncate">{item.title}</p>
-                                                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-semibold text-gray-900">Tk {(item.price * item.quantity).toLocaleString()}</p>
-                                                <p className="text-sm text-gray-500">Tk {item.price} × {item.quantity}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
