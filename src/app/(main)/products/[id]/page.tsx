@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -98,6 +98,7 @@ export default function SingleProductPage() {
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const [customSelections, setCustomSelections] = useState<Record<string, string>>({});
     const [activeTab, setActiveTab] = useState("description");
+    const tabsRef = useRef<HTMLDivElement>(null);
 
     // Review form state
     const [reviewName, setReviewName] = useState("");
@@ -470,10 +471,22 @@ export default function SingleProductPage() {
                                 </div>
 
                                 {product.description ? (
-                                    <div
-                                        className="text-gray-600 mb-6 leading-relaxed prose prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.description }}
-                                    />
+                                    <div className="mb-6">
+                                        <div
+                                            className="text-gray-600 leading-relaxed prose prose-sm max-w-none line-clamp-3"
+                                            dangerouslySetInnerHTML={{ __html: product.description }}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab("description");
+                                                tabsRef.current?.scrollIntoView({ behavior: "smooth" });
+                                            }}
+                                            className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-flex items-center gap-1"
+                                        >
+                                            Show more
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 ) : (
                                     <p className="text-gray-600 mb-6 leading-relaxed">
                                         Experience the ultimate quality with this product. Designed with precision and crafted for durability.
@@ -776,7 +789,7 @@ export default function SingleProductPage() {
                     </div>
 
                     {/* Tabs Section */}
-                    <div className="border-t border-gray-200">
+                    <div ref={tabsRef} className="border-t border-gray-200">
                         <div className="flex border-b border-gray-200 overflow-x-auto">
                             {["description", "reviews"].map((tab) => (
                                 <button
