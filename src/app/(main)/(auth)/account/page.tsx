@@ -61,7 +61,7 @@ export default function AccountPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Link href="/orders" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <Link href="/account/orders" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                             <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
                                 <Package className="w-6 h-6 text-blue-600" />
                             </div>
@@ -77,13 +77,13 @@ export default function AccountPage() {
                             <p className="text-sm text-gray-500">View and manage your saved items</p>
                         </Link>
 
-                        <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
+                        <Link href="/account/addresses" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                             <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
                                 <MapPin className="w-6 h-6 text-green-600" />
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">Addresses</h3>
                             <p className="text-sm text-gray-500">Edit addresses for orders</p>
-                        </div>
+                        </Link>
                     </div>
 
                     <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
