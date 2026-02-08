@@ -1,28 +1,44 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { onAuthChange, logout, type AuthUser } from "@/lib/authHelper";
 import { Menu, Search, Bell, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+interface AdminUser {
+    id: number;
+    name: string;
+    email: string;
+    role?: {
+        name: string;
+    };
+}
 
 interface TopbarProps {
     onMenuClick: () => void;
 }
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthChange((authUser) => {
-            setUser(authUser);
-        });
-        return () => unsubscribe();
+        // Get admin user from localStorage (set during admin login)
+        const storedAdmin = localStorage.getItem("adminUser");
+        if (storedAdmin) {
+            try {
+                setAdminUser(JSON.parse(storedAdmin));
+            } catch (e) {
+                console.error("Error parsing admin user:", e);
+            }
+        }
     }, []);
 
-    async function handleLogout() {
-        await logout();
-        window.location.href = "/admin/login";
+    function handleLogout() {
+        // Clear admin tokens
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+        router.push("/admin/login");
     }
 
     return (
@@ -58,17 +74,13 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                 {/* Profile dropdown */}
                 <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
                     <div className="hidden md:block text-right">
-                        <p className="text-sm font-medium text-gray-900">{user?.displayName || user?.email || "Admin"}</p>
-                        <p className="text-xs text-gray-500">Administrator</p>
+                        <p className="text-sm font-medium text-gray-900">{adminUser?.name || adminUser?.email || "Admin"}</p>
+                        <p className="text-xs text-gray-500">{adminUser?.role?.name || "Administrator"}</p>
                     </div>
                     <div className="relative group">
                         <button className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-medium">
-                                {user?.photoURL ? (
-                                    <Image src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                    user?.displayName?.charAt(0) || user?.email?.charAt(0) || "A"
-                                )}
+                                {adminUser?.name?.charAt(0) || adminUser?.email?.charAt(0) || "A"}
                             </div>
                             <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
                         </button>

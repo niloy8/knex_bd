@@ -50,6 +50,11 @@ const syncWithBackend = async (user: AuthUser): Promise<void> => {
             localStorage.setItem("userToken", data.token);
             localStorage.setItem("userData", JSON.stringify(data.user));
 
+            // Clear admin tokens when regular user logs in
+            // This prevents accessing admin panel with stale admin credentials
+            localStorage.removeItem("adminToken");
+            localStorage.removeItem("adminUser");
+
             // Sync guest cart/wishlist to backend
             await syncGuestData(data.token);
         }
@@ -137,6 +142,9 @@ export const logout = async (): Promise<void> => {
     // Clear backend tokens
     localStorage.removeItem("userToken");
     localStorage.removeItem("userData");
+    // Clear admin tokens as well
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUser");
 };
 
 // Get current user (synchronous)

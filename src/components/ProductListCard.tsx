@@ -84,11 +84,11 @@ export default function ProductListCard({
             {/* Product Details */}
             <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div>
-                    <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2 group-hover:text-blue-600 line-clamp-2">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2 group-hover:text-indigo-600 line-clamp-2">
                         {title}
                     </h3>
                     <div className="flex items-center gap-2 mb-2 sm:mb-3 flex-wrap">
-                        <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs sm:text-sm font-semibold flex items-center gap-1">
+                        <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs sm:text-sm font-semibold flex items-center gap-1">
                             {rating} <Star size={12} fill="white" />
                         </span>
                         <span className="text-xs sm:text-sm text-gray-600">
@@ -108,7 +108,7 @@ export default function ProductListCard({
                                 <span className="text-gray-400 line-through text-xs">
                                     Tk {originalPrice.toLocaleString()}
                                 </span>
-                                <span className="text-green-600 font-semibold text-xs">
+                                <span className="text-indigo-600 font-semibold text-xs">
                                     {discount}% off
                                 </span>
                             </div>
@@ -128,12 +128,12 @@ export default function ProductListCard({
                             <span className="text-gray-400 line-through text-sm">
                                 Tk {originalPrice.toLocaleString()}
                             </span>
-                            <span className="text-green-600 font-semibold text-sm">
+                            <span className="text-indigo-600 font-semibold text-sm">
                                 {discount}% off
                             </span>
                         </div>
                     )}
-                    <p className="text-green-700 font-semibold text-xs sm:text-sm mt-1">Super Deals</p>
+                    <p className="text-indigo-700 font-semibold text-xs sm:text-sm mt-1">Super Deals</p>
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">Upto Tk 220 Off</p>
                 </div>
                 <button

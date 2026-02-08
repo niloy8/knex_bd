@@ -28,6 +28,10 @@ export default function AdminLoginPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Login failed");
 
+            // Clear any regular user tokens to prevent session mixing
+            localStorage.removeItem("userToken");
+            localStorage.removeItem("userData");
+
             localStorage.setItem("adminToken", data.token);
             localStorage.setItem("adminUser", JSON.stringify(data.admin));
             router.push("/admin/dashboard");

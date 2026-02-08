@@ -71,11 +71,11 @@ export default function ProductGridCard({
             </div>
 
             <div className="p-4">
-                <h3 className="font-medium text-gray-800 mb-2 group-hover:text-blue-600 line-clamp-2 min-h-12">
+                <h3 className="font-medium text-gray-800 mb-2 group-hover:text-indigo-600 line-clamp-2 min-h-12">
                     {title}
                 </h3>
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1">
+                    <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1">
                         {rating} <Star size={10} fill="white" />
                     </span>
                     <span className="text-xs text-gray-500">({totalRatings.toLocaleString()})</span>
@@ -87,7 +87,7 @@ export default function ProductGridCard({
                             <span className="text-sm text-gray-400 line-through">
                                 Tk {originalPrice.toLocaleString()}
                             </span>
-                            <span className="text-sm text-green-600 font-semibold">
+                            <span className="text-sm text-indigo-600 font-semibold">
                                 {discount}% off
                             </span>
                         </>
