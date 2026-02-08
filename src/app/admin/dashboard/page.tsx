@@ -49,6 +49,7 @@ interface DashboardStats {
 
 interface SalesData {
     day: string;
+    label?: string;
     sales: number;
     orders: number;
 }
@@ -75,6 +76,7 @@ export default function AdminDashboard() {
     const [recentOrders, setRecentOrders] = useState<Order[]>([]);
     const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
     const [salesData, setSalesData] = useState<SalesData[]>([]);
+    const [salesPeriod, setSalesPeriod] = useState<number>(7);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
                 fetch(`${API_URL}/orders/admin/stats/summary`, { headers }).catch(() => null),
                 fetch(`${API_URL}/orders/admin/all?limit=5`, { headers }).catch(() => null),
                 fetch(`${API_URL}/products/admin/low-stock?threshold=10`, { headers }).catch(() => null),
-                fetch(`${API_URL}/orders/admin/stats/sales-chart?days=7`, { headers }).catch(() => null),
+                fetch(`${API_URL}/orders/admin/stats/sales-chart?days=${salesPeriod}`, { headers }).catch(() => null),
             ]);
 
             // Products count
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [salesPeriod]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -164,6 +166,15 @@ export default function AdminDashboard() {
     const handleRefresh = () => {
         setRefreshing(true);
         fetchDashboardData();
+    };
+
+    const getPeriodLabel = () => {
+        switch (salesPeriod) {
+            case 7: return "Last 7 Days";
+            case 30: return "Last 30 Days";
+            case 365: return "Last Year";
+            default: return `Last ${salesPeriod} Days`;
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -248,26 +259,61 @@ export default function AdminDashboard() {
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Sales Chart */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-6">
-                        <div className="flex items-center gap-2 mb-6">
-                            <BarChart3 className="w-5 h-5 text-gray-500" />
-                            <h3 className="text-lg font-semibold text-gray-900">Sales (Last 7 Days)</h3>
+                    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="w-5 h-5 text-gray-500" />
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Sales ({getPeriodLabel()})</h3>
+                            </div>
+                            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setSalesPeriod(7)}
+                                    className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 7
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    7D
+                                </button>
+                                <button
+                                    onClick={() => setSalesPeriod(30)}
+                                    className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 30
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    1M
+                                </button>
+                                <button
+                                    onClick={() => setSalesPeriod(365)}
+                                    className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 365
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    1Y
+                                </button>
+                            </div>
                         </div>
                         {salesData.length > 0 ? (
-                            <div className="h-48 flex items-end justify-between gap-2">
-                                {salesData.map((day, idx) => (
-                                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                                        <div
-                                            className="w-full bg-blue-500 rounded-t-sm transition-all hover:bg-blue-600"
-                                            style={{
-                                                height: `${Math.max((day.sales / maxSales) * 100, 5)}%`,
-                                                minHeight: "8px"
-                                            }}
-                                            title={`Tk ${day.sales.toLocaleString()}`}
-                                        />
-                                        <span className="text-xs text-gray-500">{day.day}</span>
-                                    </div>
-                                ))}
+                            <div className="flex items-end justify-between gap-1 sm:gap-2" style={{ height: '200px' }}>
+                                {salesData.map((item, idx) => {
+                                    const barHeight = maxSales > 0
+                                        ? Math.max((item.sales / maxSales) * 160, 8)
+                                        : 8;
+                                    return (
+                                        <div key={idx} className="flex-1 flex flex-col items-center justify-end group relative h-full">
+                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                Tk {item.sales.toLocaleString()} ({item.orders} orders)
+                                            </div>
+                                            <div
+                                                className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-600 cursor-pointer"
+                                                style={{ height: `${barHeight}px` }}
+                                            />
+                                            <span className="text-[10px] sm:text-xs text-gray-500 truncate max-w-full mt-2">{item.day}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="h-48 flex items-center justify-center text-gray-400">

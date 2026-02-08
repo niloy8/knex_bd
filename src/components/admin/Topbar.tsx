@@ -34,7 +34,6 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
     const [notifications, setNotifications] = useState<OrderNotification[]>([]);
     const [pendingCount, setPendingCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [lastCheck, setLastCheck] = useState<string | null>(null);
     const notificationRef = useRef<HTMLDivElement>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const router = useRouter();
@@ -50,12 +49,6 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             }
         }
 
-        // Get last check time from localStorage
-        const savedLastCheck = localStorage.getItem("lastNotificationCheck");
-        if (savedLastCheck) {
-            setLastCheck(savedLastCheck);
-        }
-
         // Create audio element for notification sound
         audioRef.current = new Audio("/notification.mp3");
     }, []);
@@ -67,35 +60,26 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                 const token = localStorage.getItem("adminToken");
                 if (!token) return;
 
-                const params = new URLSearchParams();
-                if (lastCheck) {
-                    params.set("since", lastCheck);
-                }
-
-                const res = await fetch(`${API}/orders/admin/notifications?${params}`, {
+                const res = await fetch(`${API}/orders/admin/notifications`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
                 if (res.ok) {
                     const data = await res.json();
 
-                    // Check for new orders since last check
-                    if (lastCheck && data.orders.length > 0) {
-                        const newOrders = data.orders.filter((o: OrderNotification) =>
-                            new Date(o.createdAt) > new Date(lastCheck)
-                        );
-                        if (newOrders.length > 0) {
-                            // Play notification sound
-                            if (audioRef.current) {
-                                audioRef.current.play().catch(() => { });
-                            }
-                            // Show browser notification if permitted
-                            if (Notification.permission === "granted") {
-                                new Notification("New Order!", {
-                                    body: `${newOrders.length} new order(s) received`,
-                                    icon: "/logos/logo.png",
-                                });
-                            }
+                    // Check if there are new orders since last notification count
+                    const previousCount = pendingCount;
+                    if (data.pendingCount > previousCount && previousCount > 0) {
+                        // Play notification sound for new orders
+                        if (audioRef.current) {
+                            audioRef.current.play().catch(() => { });
+                        }
+                        // Show browser notification if permitted
+                        if (Notification.permission === "granted") {
+                            new Notification("New Order!", {
+                                body: `You have ${data.pendingCount} pending order(s)`,
+                                icon: "/logos/logo.png",
+                            });
                         }
                     }
 
@@ -114,12 +98,12 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         const interval = setInterval(fetchNotifications, 30000);
 
         // Request notification permission
-        if (Notification.permission === "default") {
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
 
         return () => clearInterval(interval);
-    }, [lastCheck]);
+    }, [pendingCount]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -135,12 +119,6 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
     const handleNotificationClick = () => {
         setShowNotifications(!showNotifications);
-        // Update last check time when opening notifications
-        if (!showNotifications) {
-            const now = new Date().toISOString();
-            setLastCheck(now);
-            localStorage.setItem("lastNotificationCheck", now);
-        }
     };
 
     const formatTime = (dateString: string) => {
@@ -231,16 +209,16 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                                             className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0"
                                         >
                                             <div className={`p-2 rounded-lg shrink-0 ${order.status === "pending"
-                                                    ? "bg-yellow-50"
-                                                    : order.status === "processing"
-                                                        ? "bg-blue-50"
-                                                        : "bg-green-50"
+                                                ? "bg-yellow-50"
+                                                : order.status === "processing"
+                                                    ? "bg-blue-50"
+                                                    : "bg-green-50"
                                                 }`}>
                                                 <Package className={`w-4 h-4 ${order.status === "pending"
-                                                        ? "text-yellow-600"
-                                                        : order.status === "processing"
-                                                            ? "text-blue-600"
-                                                            : "text-green-600"
+                                                    ? "text-yellow-600"
+                                                    : order.status === "processing"
+                                                        ? "text-blue-600"
+                                                        : "text-green-600"
                                                     }`} />
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -255,10 +233,10 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                                                 </p>
                                             </div>
                                             <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${order.status === "pending"
-                                                    ? "bg-yellow-100 text-yellow-700"
-                                                    : order.status === "processing"
-                                                        ? "bg-blue-100 text-blue-700"
-                                                        : "bg-green-100 text-green-700"
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : order.status === "processing"
+                                                    ? "bg-blue-100 text-blue-700"
+                                                    : "bg-green-100 text-green-700"
                                                 }`}>
                                                 {order.status}
                                             </span>
