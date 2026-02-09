@@ -155,8 +155,8 @@ export default function AddressesPage() {
                                             type="button"
                                             onClick={() => setFormData({ ...formData, type: opt.value })}
                                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${formData.type === opt.value
-                                                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                                                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                                : "border-gray-200 text-gray-600 hover:border-gray-300"
                                                 }`}
                                         >
                                             <Icon className="w-5 h-5" />
@@ -218,7 +218,7 @@ export default function AddressesPage() {
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                 >
-                                    <option value="inside">Inside Dhaka (Tk 60)</option>
+                                    <option value="inside">Inside Dhaka (Tk 80)</option>
                                     <option value="outside">Outside Dhaka (Tk 120)</option>
                                 </select>
                             </div>
@@ -300,10 +300,10 @@ export default function AddressesPage() {
 
                             <div className="flex items-start gap-3">
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${addr.type === "home"
-                                        ? "bg-green-100 text-green-600"
-                                        : addr.type === "office"
-                                            ? "bg-blue-100 text-blue-600"
-                                            : "bg-gray-100 text-gray-600"
+                                    ? "bg-green-100 text-green-600"
+                                    : addr.type === "office"
+                                        ? "bg-blue-100 text-blue-600"
+                                        : "bg-gray-100 text-gray-600"
                                     }`}>
                                     <TypeIcon type={addr.type} />
                                 </div>
