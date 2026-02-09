@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Package, ChevronRight, ArrowLeft, Eye, MapPin, Phone, User, CreditCard, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Package, ChevronRight, ArrowLeft, Eye, MapPin, Phone, User, CreditCard, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,26 +45,61 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function MyOrdersPage() {
-    const { loading: authLoading, authFetch } = useAuth();
+    const { loading: authLoading, authFetch, user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [filter, setFilter] = useState("all");
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchOrders = useCallback(async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        setError(null);
+        try {
+            console.log("Fetching orders for user:", user?.email);
+            const res = await authFetch("/orders/my-orders");
+            console.log("Response status:", res.status);
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Fetched orders:", data);
+                setOrders(data);
+            } else {
+                const errData = await res.json();
+                console.error("Error response:", errData);
+                setError(errData.error || "Failed to fetch orders");
+            }
+        } catch (e) {
+            console.error("Error fetching orders:", e);
+            setError(e instanceof Error ? e.message : "Failed to fetch orders");
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, [authFetch, user]);
 
     useEffect(() => {
         if (!authLoading) fetchOrders();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authLoading]);
+    }, [authLoading, fetchOrders]);
 
-    const fetchOrders = async () => {
-        try {
-            const res = await authFetch("/orders/my-orders");
-            if (res.ok) setOrders(await res.json());
-        } catch (e) {
-            console.error("Error fetching orders:", e);
-        } finally {
-            setLoading(false);
-        }
+    // Auto-refresh every 30 seconds when viewing orders
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!authLoading && !loading) {
+                fetchOrders(true);
+            }
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [authLoading, loading, fetchOrders]);
+
+    const handleRefresh = () => {
+        fetchOrders(true);
+    };
+
+    const handleBackToOrders = () => {
+        setSelectedOrder(null);
+        fetchOrders(true); // Refresh when going back
     };
 
     const formatDate = (dateString: string) =>
@@ -95,8 +130,8 @@ export default function MyOrdersPage() {
         return (
             <div className="max-w-5xl mx-auto px-4 py-8">
                 <button
-                    onClick={() => setSelectedOrder(null)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+                    onClick={handleBackToOrders}
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     Back to Orders
@@ -126,10 +161,10 @@ export default function MyOrdersPage() {
                                 return (
                                     <div key={step} className="flex flex-col items-center flex-1">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isCancelled
-                                                ? "bg-red-100 text-red-600"
-                                                : isCompleted
-                                                    ? "bg-green-500 text-white"
-                                                    : "bg-gray-200 text-gray-400"
+                                            ? "bg-red-100 text-red-600"
+                                            : isCompleted
+                                                ? "bg-green-500 text-white"
+                                                : "bg-gray-200 text-gray-400"
                                             }`}>
                                             {isCancelled ? (
                                                 <XCircle className="w-5 h-5" />
@@ -273,7 +308,22 @@ export default function MyOrdersPage() {
                         <p className="text-sm text-gray-500">Track and manage your orders</p>
                     </div>
                 </div>
+                <button
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                >
+                    <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+                    {refreshing ? "Refreshing..." : "Refresh"}
+                </button>
             </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <p className="text-red-600 text-sm">{error}</p>
+                </div>
+            )}
 
             {/* Filters */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -289,8 +339,8 @@ export default function MyOrdersPage() {
                         key={opt.value}
                         onClick={() => setFilter(opt.value)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === opt.value
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                     >
                         {opt.label}
