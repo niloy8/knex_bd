@@ -269,8 +269,8 @@ export default function AdminDashboard() {
                                 <button
                                     onClick={() => setSalesPeriod(7)}
                                     className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 7
-                                            ? 'bg-white text-blue-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     7D
@@ -278,8 +278,8 @@ export default function AdminDashboard() {
                                 <button
                                     onClick={() => setSalesPeriod(30)}
                                     className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 30
-                                            ? 'bg-white text-blue-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     1M
@@ -287,8 +287,8 @@ export default function AdminDashboard() {
                                 <button
                                     onClick={() => setSalesPeriod(365)}
                                     className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${salesPeriod === 365
-                                            ? 'bg-white text-blue-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     1Y
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <Link
-                                                    href={`/admin/products/${product.id}/edit`}
+                                                    href={`/admin/products/${product.id}`}
                                                     className="text-blue-600 hover:text-blue-700 font-medium text-sm"
                                                 >
                                                     Restock
