@@ -42,10 +42,7 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-bold text-lg mb-4">SOCIAL</h3>
                         <ul className="space-y-2 text-sm">
-                            <li><Link href="#" className="hover:text-white">Facebook</Link></li>
-                            <li><Link href="#" className="hover:text-white">Twitter</Link></li>
-                            <li><Link href="#" className="hover:text-white">Instagram</Link></li>
-                            <li><Link href="#" className="hover:text-white">YouTube</Link></li>
+                            <li><Link href="https://www.facebook.com/knex.bd" target="_blank" rel="noopener noreferrer" className="hover:text-white">Facebook</Link></li>
                         </ul>
                     </div>
                 </div>
