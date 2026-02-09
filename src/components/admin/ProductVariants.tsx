@@ -1,3 +1,4 @@
+"use client";
 import { Plus, Trash2, X } from "lucide-react";
 
 interface ProductVariantsProps {

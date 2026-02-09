@@ -1,3 +1,4 @@
+"use client";
 import { Eye, Heart, Package, Star, Check } from "lucide-react";
 import Image from "next/image";
 
@@ -47,7 +48,7 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                             {gallery.length > 0 && (
                                 <div className="flex flex-col gap-2" suppressHydrationWarning>
                                     {gallery.slice(0, 6).map((img, idx) => (
-                                        <div key={idx} className="relative w-16 h-16 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 flex-shrink-0 overflow-hidden cursor-pointer">
+                                        <div key={idx} className="relative w-16 h-16 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 shrink-0 overflow-hidden cursor-pointer">
                                             <Image src={img} alt={`Thumb ${idx + 1}`} fill className="object-cover" unoptimized />
                                         </div>
                                     ))}
@@ -159,7 +160,7 @@ export default function ProductPreview({ product, mainImage, gallery, productTyp
                                 <ul className="space-y-1">
                                     {features.map((feature, idx) => (
                                         <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                                            <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                            <Check className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                                             <span>{feature}</span>
                                         </li>
                                     ))}

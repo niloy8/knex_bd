@@ -1,3 +1,4 @@
+"use client";
 import { FileText, Tag, X, Plus, Trash2 } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";

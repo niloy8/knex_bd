@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 type BadgeVariant = "success" | "warning" | "error" | "info" | "default";
