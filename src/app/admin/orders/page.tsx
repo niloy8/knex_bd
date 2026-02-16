@@ -433,15 +433,24 @@ export default function AdminOrders() {
                                 <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
                                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                                     {selectedOrder.items.map((item, idx) => {
+                                        console.log("Rendering item:", item);
                                         // Build variant display
                                         const variantParts: string[] = [];
                                         if (item.selectedVariant?.name) variantParts.push(item.selectedVariant.name);
                                         if (item.selectedColor) variantParts.push(`Color: ${item.selectedColor}`);
                                         if (item.selectedSize) variantParts.push(`Size: ${item.selectedSize}`);
                                         if (item.customSelections) {
-                                            Object.entries(item.customSelections).forEach(([key, value]) => {
-                                                variantParts.push(`${key}: ${value}`);
-                                            });
+                                            try {
+                                                const selections = typeof item.customSelections === 'string'
+                                                    ? JSON.parse(item.customSelections)
+                                                    : item.customSelections;
+
+                                                Object.entries(selections).forEach(([key, value]) => {
+                                                    variantParts.push(`${key}: ${value}`);
+                                                });
+                                            } catch (e) {
+                                                console.error("Error parsing customSelections:", e);
+                                            }
                                         }
                                         const variantText = variantParts.join(" | ");
 
