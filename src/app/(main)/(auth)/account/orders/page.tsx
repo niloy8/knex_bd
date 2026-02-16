@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Package, ChevronRight, ArrowLeft, Eye, MapPin, Phone, User, CreditCard, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { Package, ChevronRight, ArrowLeft, Eye, MapPin, Phone, User, CreditCard, CheckCircle, XCircle, RefreshCw, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,10 +52,13 @@ export default function MyOrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [filter, setFilter] = useState("all");
     const [error, setError] = useState<string | null>(null);
+    const [isAuthError, setIsAuthError] = useState(false);
 
     const fetchOrders = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         setError(null);
+        setIsAuthError(false);
+
         try {
             console.log("Fetching orders for user:", user?.email);
             const res = await authFetch("/orders/my-orders");
@@ -65,14 +68,37 @@ export default function MyOrdersPage() {
                 const data = await res.json();
                 console.log("Fetched orders:", data);
                 setOrders(data);
+                setError(null);
+                setIsAuthError(false);
+            } else if (res.status === 401) {
+                // Authentication error - token expired or invalid
+                console.error("Authentication failed - redirecting to login");
+                setError("Your session has expired. Please log in again.");
+                setIsAuthError(true);
+                // Redirect to login after a brief delay
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
             } else {
-                const errData = await res.json();
+                // Other errors (network, server, etc.) - don't logout
+                const errData = await res.json().catch(() => ({ error: "Failed to fetch orders" }));
                 console.error("Error response:", errData);
-                setError(errData.error || "Failed to fetch orders");
+                setError(errData.error || `Server error (${res.status}). Please try again.`);
+                setIsAuthError(false);
             }
         } catch (e) {
             console.error("Error fetching orders:", e);
-            setError(e instanceof Error ? e.message : "Failed to fetch orders");
+            // Network errors or other exceptions - don't logout
+            if (e instanceof Error && e.message === "Not authenticated") {
+                setError("Please log in to view your orders.");
+                setIsAuthError(true);
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                setError("Network error. Please check your connection and try again.");
+                setIsAuthError(false);
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -245,6 +271,15 @@ export default function MyOrdersPage() {
                                                 width={80}
                                                 height={80}
                                                 className="w-full h-full object-cover"
+                                                unoptimized
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = "none";
+                                                    const parent = target.parentElement;
+                                                    if (parent) {
+                                                        parent.innerHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg></div>`;
+                                                    }
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -320,8 +355,30 @@ export default function MyOrdersPage() {
 
             {/* Error Message */}
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <p className="text-red-600 text-sm">{error}</p>
+                <div className={`mb-6 p-4 rounded-xl border flex items-start gap-3 ${isAuthError
+                        ? "bg-red-50 border-red-200"
+                        : "bg-yellow-50 border-yellow-200"
+                    }`}>
+                    <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${isAuthError ? "text-red-600" : "text-yellow-600"
+                        }`} />
+                    <div className="flex-1">
+                        <p className={`text-sm font-medium ${isAuthError ? "text-red-900" : "text-yellow-900"
+                            }`}>
+                            {isAuthError ? "Authentication Error" : "Temporary Error"}
+                        </p>
+                        <p className={`text-sm mt-1 ${isAuthError ? "text-red-600" : "text-yellow-700"
+                            }`}>
+                            {error}
+                        </p>
+                        {!isAuthError && (
+                            <button
+                                onClick={() => fetchOrders(true)}
+                                className="mt-2 text-sm font-medium text-yellow-800 hover:text-yellow-900 underline"
+                            >
+                                Try again
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -399,6 +456,15 @@ export default function MyOrdersPage() {
                                                         width={64}
                                                         height={64}
                                                         className="w-full h-full object-cover"
+                                                        unoptimized
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.style.display = "none";
+                                                            const parent = target.parentElement;
+                                                            if (parent) {
+                                                                parent.innerHTML = `<div class="w-full h-full flex items-center justify-center"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg></div>`;
+                                                            }
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center">

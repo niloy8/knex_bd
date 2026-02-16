@@ -43,11 +43,8 @@ export function useAuth(options: UseAuthOptions = {}) {
             },
         });
 
-        if (res.status === 401) {
-            router.push(redirectTo);
-            throw new Error("Session expired");
-        }
-
+        // Return the response and let the calling component handle 401 errors
+        // This prevents unnecessary redirects on temporary network issues
         return res;
     };
 
