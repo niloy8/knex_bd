@@ -37,15 +37,24 @@ export default function HomePage() {
                 if (res.ok) {
                     const data = await res.json();
                     // Map categories to the format expected by CategoryCard
-                    const mappedCategories = data.map((cat: any) => ({
-                        id: cat.id,
-                        name: cat.name,
-                        slug: cat.slug,
-                        icon: cat.image || cat.icon || "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png",
-                        href: `/products?category=${cat.slug}`,
-                        badge: cat.name === "Stone" ? "NEW" : undefined,
-                        subCategories: cat.subCategories || []
-                    }));
+                    const mappedCategories = data.map((cat: any) => {
+                        let imageUrl = cat.image || cat.icon || "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png";
+                        // If it's a relative path starting with /uploads, prepend the backend URL
+                        if (imageUrl.startsWith('/uploads')) {
+                            const baseUrl = API_URL.replace('/api', '');
+                            imageUrl = `${baseUrl}${imageUrl}`;
+                        }
+
+                        return {
+                            id: cat.id,
+                            name: cat.name,
+                            slug: cat.slug,
+                            icon: imageUrl,
+                            href: `/products?category=${cat.slug}`,
+                            badge: cat.name === "Stone" ? "NEW" : undefined,
+                            subCategories: cat.subCategories || []
+                        };
+                    });
                     setCategories(mappedCategories);
                 }
             } catch (error) {
