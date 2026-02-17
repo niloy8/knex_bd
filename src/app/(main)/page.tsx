@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import CategoryCard from "@/components/CategoryCard";
 import ProductCard from "@/components/ProductCard";
 import Banner from "@/components/Banner";
@@ -5,21 +8,70 @@ import SectionHeader from "@/components/SectionHeader";
 import DealsSection from "@/components/DealsSection";
 import FashionPromo from "@/components/FashionPromo";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+interface Category {
+    id?: number;
+    name: string;
+    slug?: string;
+    icon: string;
+    image?: string;
+    href: string;
+    badge?: string;
+    subCategories?: {
+        id: number;
+        name: string;
+        slug: string;
+        image?: string;
+    }[];
+}
+
 export default function HomePage() {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${API_URL}/categories`);
+                if (res.ok) {
+                    const data = await res.json();
+                    // Map categories to the format expected by CategoryCard
+                    const mappedCategories = data.map((cat: any) => ({
+                        id: cat.id,
+                        name: cat.name,
+                        slug: cat.slug,
+                        icon: cat.image || cat.icon || "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png",
+                        href: `/products?category=${cat.slug}`,
+                        badge: cat.name === "Stone" ? "NEW" : undefined,
+                        subCategories: cat.subCategories || []
+                    }));
+                    setCategories(mappedCategories);
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                // Fallback to default categories if fetch fails
+                setCategories([
+                    { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/products?category=fashion" },
+                    { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/products?category=beauty" },
+                    { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/products?category=mobiles" },
+                    { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/products?category=smart-gadget" },
+                    { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/products?category=electronics" },
+                    { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/products?category=home-furniture" },
+                    { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/products?category=stone", badge: "NEW" },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
     const banners = [
         { title: "Office Chairs", subtitle: "Green Soul, Cell Bell & more", price: "From Tk 2,999", bgColor: "bg-gradient-to-r from-blue-600 to-indigo-600", iconName: "Armchair" },
         { title: "Gaming Laptops", subtitle: "ASUS, MSI & more", price: "From Tk 49,999", bgColor: "bg-gradient-to-r from-purple-600 to-pink-600", iconName: "Laptop" },
         { title: "Smart Watches", subtitle: "Apple, Samsung & more", price: "From Tk 1,999", bgColor: "bg-gradient-to-r from-green-600 to-teal-600", iconName: "Watch" },
-    ];
-
-    const categories = [
-        { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/products?category=fashion" },
-        { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/products?category=beauty" },
-        { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/products?category=mobiles" },
-        { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/products?category=smart-gadget" },
-        { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/products?category=electronics" },
-        { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/products?category=home-furniture" },
-        { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/products?category=stone", badge: "NEW" },
     ];
 
 

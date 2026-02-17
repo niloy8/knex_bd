@@ -1,5 +1,4 @@
-"use client";
-import { FileText, Tag, X, Plus, Trash2 } from "lucide-react";
+import { FileText, Tag, X, Plus, Trash2, Upload, Loader2 } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";
 
@@ -69,9 +68,34 @@ export default function ProductFormFields({
     const [showNewSubcategory, setShowNewSubcategory] = useState(false);
     const [showNewBrand, setShowNewBrand] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
+    const [newCategoryIcon, setNewCategoryIcon] = useState("");
     const [newSubcategoryName, setNewSubcategoryName] = useState("");
+    const [newSubcategoryImage, setNewSubcategoryImage] = useState("");
     const [newBrandName, setNewBrandName] = useState("");
     const [saving, setSaving] = useState(false);
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const formData = new FormData();
+        formData.append("image", file);
+        try {
+            const res = await fetch(`${API_URL}/upload/single`, {
+                method: "POST",
+                body: formData,
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.url;
+            } else {
+                const error = await res.json();
+                alert(error.error || "Failed to upload image");
+                return null;
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Failed to upload image");
+            return null;
+        }
+    };
 
     const handleAddCategory = async () => {
         if (!newCategoryName.trim()) return;
@@ -86,13 +110,16 @@ export default function ProductFormFields({
                 },
                 body: JSON.stringify({
                     name: newCategoryName.trim(),
-                    slug: newCategoryName.trim().toLowerCase().replace(/\s+/g, '-')
+                    slug: newCategoryName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    image: newCategoryIcon.trim() || null,
+                    icon: newCategoryIcon.trim() || null
                 }),
             });
             if (res.ok) {
                 const newCat = await res.json();
                 setProduct({ ...product, categoryId: newCat.id, subCategoryId: "" });
                 setNewCategoryName("");
+                setNewCategoryIcon("");
                 setShowNewCategory(false);
                 onCategoriesChange?.();
             }
@@ -114,12 +141,17 @@ export default function ProductFormFields({
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ name: newSubcategoryName.trim(), slug: newSubcategoryName.trim().toLowerCase().replace(/\s+/g, '-') }),
+                body: JSON.stringify({
+                    name: newSubcategoryName.trim(),
+                    slug: newSubcategoryName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    image: newSubcategoryImage.trim() || null
+                }),
             });
             if (res.ok) {
                 const newSub = await res.json();
                 setProduct({ ...product, subCategoryId: newSub.id });
                 setNewSubcategoryName("");
+                setNewSubcategoryImage("");
                 setShowNewSubcategory(false);
                 onCategoriesChange?.();
             }
@@ -311,34 +343,60 @@ export default function ProductFormFields({
                         )}
                     </div>
                 ) : (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                         <input
                             type="text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="Enter new category"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                            placeholder="Enter category name"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
-                        <button
-                            type="button"
-                            onClick={handleAddCategory}
-                            disabled={saving}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                        >
-                            {saving ? "..." : "Add"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowNewCategory(false);
-                                setNewCategoryName("");
-                            }}
-                            className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newCategoryIcon}
+                                onChange={(e) => setNewCategoryIcon(e.target.value)}
+                                placeholder="Enter image URL or upload"
+                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <label className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center">
+                                <Upload className="w-4 h-4" />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const url = await uploadImage(file);
+                                            if (url) setNewCategoryIcon(url);
+                                        }
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleAddCategory}
+                                disabled={saving}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {saving ? "..." : "Add"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowNewCategory(false);
+                                    setNewCategoryName("");
+                                    setNewCategoryIcon("");
+                                }}
+                                className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -379,34 +437,60 @@ export default function ProductFormFields({
                         )}
                     </div>
                 ) : (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                         <input
                             type="text"
                             value={newSubcategoryName}
                             onChange={(e) => setNewSubcategoryName(e.target.value)}
-                            placeholder="Enter new subcategory"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddSubcategory()}
+                            placeholder="Enter subcategory name"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
-                        <button
-                            type="button"
-                            onClick={handleAddSubcategory}
-                            disabled={saving}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                        >
-                            {saving ? "..." : "Add"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowNewSubcategory(false);
-                                setNewSubcategoryName("");
-                            }}
-                            className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newSubcategoryImage}
+                                onChange={(e) => setNewSubcategoryImage(e.target.value)}
+                                placeholder="Enter image URL or upload"
+                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <label className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center">
+                                <Upload className="w-4 h-4" />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const url = await uploadImage(file);
+                                            if (url) setNewSubcategoryImage(url);
+                                        }
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleAddSubcategory}
+                                disabled={saving}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {saving ? "..." : "Add"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowNewSubcategory(false);
+                                    setNewSubcategoryName("");
+                                    setNewSubcategoryImage("");
+                                }}
+                                className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
