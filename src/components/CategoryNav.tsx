@@ -6,12 +6,13 @@ import { ChevronDown } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-type SubCategory = { id: number; name: string; slug: string };
+type SubCategory = { id: number; name: string; slug: string; image?: string };
 type Category = {
     id: number;
     name: string;
     slug: string;
-    icon: string;
+    icon?: string;
+    image?: string;
     subcategories?: SubCategory[];
     subCategories?: SubCategory[];
 };
@@ -145,9 +146,26 @@ export default function CategoryNav() {
                                 <Link
                                     key={sub.id}
                                     href={`/products?category=${activeDropdown}&subcategory=${sub.slug}`}
-                                    className="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150"
+                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150"
                                 >
-                                    {sub.name}
+                                    <div className="relative w-8 h-8 shrink-0">
+                                        <img
+                                            src={(() => {
+                                                let img = sub.image || "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png";
+                                                if (img.startsWith('/uploads')) {
+                                                    const baseUrl = API.replace('/api', '');
+                                                    return `${baseUrl}${img}`;
+                                                }
+                                                return img;
+                                            })()}
+                                            alt={sub.name}
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png";
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="truncate">{sub.name}</span>
                                 </Link>
                             ))}
                         </div>

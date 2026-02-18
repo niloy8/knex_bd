@@ -1,7 +1,7 @@
-"use client";
-import { FileText, Tag, X, Plus, Trash2 } from "lucide-react";
+import { FileText, Tag, X, Plus, Trash2, Upload, Loader2, Search } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";
+import SearchableSelect from "./SearchableSelect";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -69,37 +69,94 @@ export default function ProductFormFields({
     const [showNewSubcategory, setShowNewSubcategory] = useState(false);
     const [showNewBrand, setShowNewBrand] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
+    const [newCategoryIcon, setNewCategoryIcon] = useState("");
     const [newSubcategoryName, setNewSubcategoryName] = useState("");
+    const [newSubcategoryImage, setNewSubcategoryImage] = useState("");
     const [newBrandName, setNewBrandName] = useState("");
     const [saving, setSaving] = useState(false);
+    const [isEditingCategory, setIsEditingCategory] = useState(false);
+    const [isEditingSubcategory, setIsEditingSubcategory] = useState(false);
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const formData = new FormData();
+        formData.append("image", file);
+        try {
+            const res = await fetch(`${API_URL}/upload/single`, {
+                method: "POST",
+                body: formData,
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.url;
+            } else {
+                const error = await res.json();
+                alert(error.error || "Failed to upload image");
+                return null;
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Failed to upload image");
+            return null;
+        }
+    };
 
     const handleAddCategory = async () => {
         if (!newCategoryName.trim()) return;
         setSaving(true);
         try {
             const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories`, {
-                method: "POST",
+            const url = isEditingCategory && product.categoryId
+                ? `${API_URL}/categories/${product.categoryId}`
+                : `${API_URL}/categories`;
+            const method = isEditingCategory ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     name: newCategoryName.trim(),
-                    slug: newCategoryName.trim().toLowerCase().replace(/\s+/g, '-')
+                    slug: newCategoryName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    image: newCategoryIcon.trim() || null,
+                    icon: newCategoryIcon.trim() || null
                 }),
             });
             if (res.ok) {
-                const newCat = await res.json();
-                setProduct({ ...product, categoryId: newCat.id, subCategoryId: "" });
+                const updatedCat = await res.json();
+                if (!isEditingCategory) {
+                    setProduct({ ...product, categoryId: String(updatedCat.id), subCategoryId: "" });
+                }
+                alert(isEditingCategory ? "Category updated successfully!" : "Category added successfully!");
                 setNewCategoryName("");
+                setNewCategoryIcon("");
                 setShowNewCategory(false);
+                setIsEditingCategory(false);
                 onCategoriesChange?.();
+            } else {
+                const err = await res.json();
+                alert(err.error || "Failed to save category");
             }
         } catch (error) {
-            console.error("Error adding category:", error);
+            console.error("Error saving category:", error);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleEditCategory = () => {
+        const cat = categories.find(c => String(c.id) === String(product.categoryId));
+        if (cat) {
+            setNewCategoryName(cat.name);
+            let img = (cat as any).image || (cat as any).icon || "";
+            if (img.startsWith('/uploads')) {
+                const baseUrl = API_URL.replace('/api', '');
+                img = `${baseUrl}${img}`;
+            }
+            setNewCategoryIcon(img);
+            setIsEditingCategory(true);
+            setShowNewCategory(true);
         }
     };
 
@@ -108,25 +165,57 @@ export default function ProductFormFields({
         setSaving(true);
         try {
             const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory`, {
-                method: "POST",
+            const url = isEditingSubcategory && product.subCategoryId
+                ? `${API_URL}/categories/${product.categoryId}/subcategory/${product.subCategoryId}`
+                : `${API_URL}/categories/${product.categoryId}/subcategory`;
+            const method = isEditingSubcategory ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ name: newSubcategoryName.trim(), slug: newSubcategoryName.trim().toLowerCase().replace(/\s+/g, '-') }),
+                body: JSON.stringify({
+                    name: newSubcategoryName.trim(),
+                    slug: newSubcategoryName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    image: newSubcategoryImage.trim() || null
+                }),
             });
             if (res.ok) {
-                const newSub = await res.json();
-                setProduct({ ...product, subCategoryId: newSub.id });
+                const updatedSub = await res.json();
+                if (!isEditingSubcategory) {
+                    setProduct({ ...product, subCategoryId: String(updatedSub.id) });
+                }
+                alert(isEditingSubcategory ? "Subcategory updated successfully!" : "Subcategory added successfully!");
                 setNewSubcategoryName("");
+                setNewSubcategoryImage("");
                 setShowNewSubcategory(false);
+                setIsEditingSubcategory(false);
                 onCategoriesChange?.();
+            } else {
+                const err = await res.json();
+                alert(err.error || "Failed to save subcategory");
             }
         } catch (error) {
-            console.error("Error adding subcategory:", error);
+            console.error("Error saving subcategory:", error);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleEditSubcategory = () => {
+        const sub = (selectedCategory?.subCategories as any)?.find((s: any) => String(s.id) === String(product.subCategoryId));
+        if (sub) {
+            setNewSubcategoryName(sub.name);
+            let img = sub.image || "";
+            if (img.startsWith('/uploads')) {
+                const baseUrl = API_URL.replace('/api', '');
+                img = `${baseUrl}${img}`;
+            }
+            setNewSubcategoryImage(img);
+            setIsEditingSubcategory(true);
+            setShowNewSubcategory(true);
         }
     };
 
@@ -278,67 +367,105 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 {!showNewCategory ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={categories.map(cat => ({ id: String(cat.id), name: cat.name }))}
                             value={product.categoryId || ""}
-                            onChange={(e) => {
-                                console.log("Category selected:", e.target.value);
-                                setProduct({ ...product, categoryId: e.target.value, subCategoryId: "" });
+                            onChange={(val) => {
+                                console.log("Category selected:", val);
+                                setProduct({ ...product, categoryId: val, subCategoryId: "" });
                             }}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        >
-                            <option value="">Select category</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
-                            ))}
-                        </select>
+                            placeholder="Select category"
+                            className="flex-1"
+                        />
                         <button
                             type="button"
-                            onClick={() => setShowNewCategory(true)}
+                            onClick={() => {
+                                setIsEditingCategory(false);
+                                setShowNewCategory(true);
+                            }}
                             className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             title="Add new category"
                         >
                             <Plus className="w-4 h-4" />
                         </button>
                         {product.categoryId && (
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteCategory(product.categoryId!)}
-                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                title="Delete selected category"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={handleEditCategory}
+                                    className="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                                    title="Edit selected category"
+                                >
+                                    <div className="w-4 h-4 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteCategory(product.categoryId!)}
+                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                    title="Delete selected category"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </>
                         )}
                     </div>
                 ) : (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                         <input
                             type="text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="Enter new category"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                            placeholder="Enter category name"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
-                        <button
-                            type="button"
-                            onClick={handleAddCategory}
-                            disabled={saving}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                        >
-                            {saving ? "..." : "Add"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowNewCategory(false);
-                                setNewCategoryName("");
-                            }}
-                            className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newCategoryIcon}
+                                onChange={(e) => setNewCategoryIcon(e.target.value)}
+                                placeholder="Enter image URL or upload"
+                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <label className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center">
+                                <Upload className="w-4 h-4" />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const url = await uploadImage(file);
+                                            if (url) setNewCategoryIcon(url);
+                                        }
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleAddCategory}
+                                disabled={saving}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (isEditingCategory ? "Update" : "Add")}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowNewCategory(false);
+                                    setNewCategoryName("");
+                                    setNewCategoryIcon("");
+                                }}
+                                className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -347,20 +474,20 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
                 {!showNewSubcategory ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={subCategories.map(sub => ({ id: String(sub.id), name: sub.name }))}
                             value={product.subCategoryId || ""}
-                            onChange={(e) => setProduct({ ...product, subCategoryId: e.target.value })}
+                            onChange={(val) => setProduct({ ...product, subCategoryId: val })}
+                            placeholder="Select subcategory"
                             disabled={!product.categoryId}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-50"
-                        >
-                            <option value="">Select subcategory</option>
-                            {subCategories.map((sub) => (
-                                <option key={sub.id} value={sub.id}>{sub.name}</option>
-                            ))}
-                        </select>
+                            className="flex-1"
+                        />
                         <button
                             type="button"
-                            onClick={() => setShowNewSubcategory(true)}
+                            onClick={() => {
+                                setIsEditingSubcategory(false);
+                                setShowNewSubcategory(true);
+                            }}
                             disabled={!product.categoryId}
                             className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Add new subcategory"
@@ -368,45 +495,83 @@ export default function ProductFormFields({
                             <Plus className="w-4 h-4" />
                         </button>
                         {product.subCategoryId && (
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteSubcategory(product.subCategoryId!)}
-                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                title="Delete selected subcategory"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={handleEditSubcategory}
+                                    className="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                                    title="Edit selected subcategory"
+                                >
+                                    <div className="w-4 h-4 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteSubcategory(product.subCategoryId!)}
+                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                    title="Delete selected subcategory"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </>
                         )}
                     </div>
                 ) : (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                         <input
                             type="text"
                             value={newSubcategoryName}
                             onChange={(e) => setNewSubcategoryName(e.target.value)}
-                            placeholder="Enter new subcategory"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddSubcategory()}
+                            placeholder="Enter subcategory name"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
-                        <button
-                            type="button"
-                            onClick={handleAddSubcategory}
-                            disabled={saving}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                        >
-                            {saving ? "..." : "Add"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowNewSubcategory(false);
-                                setNewSubcategoryName("");
-                            }}
-                            className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newSubcategoryImage}
+                                onChange={(e) => setNewSubcategoryImage(e.target.value)}
+                                placeholder="Enter image URL or upload"
+                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <label className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center">
+                                <Upload className="w-4 h-4" />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const url = await uploadImage(file);
+                                            if (url) setNewSubcategoryImage(url);
+                                        }
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleAddSubcategory}
+                                disabled={saving}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (isEditingSubcategory ? "Update" : "Add")}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowNewSubcategory(false);
+                                    setNewSubcategoryName("");
+                                    setNewSubcategoryImage("");
+                                }}
+                                className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -415,16 +580,13 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
                 {!showNewBrand ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={brands.map(brand => ({ id: String(brand.id), name: brand.name }))}
                             value={product.brandId || ""}
-                            onChange={(e) => setProduct({ ...product, brandId: e.target.value })}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        >
-                            <option value="">Select brand</option>
-                            {brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>{brand.name}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => setProduct({ ...product, brandId: val })}
+                            placeholder="Select brand"
+                            className="flex-1"
+                        />
                         <button
                             type="button"
                             onClick={() => setShowNewBrand(true)}
