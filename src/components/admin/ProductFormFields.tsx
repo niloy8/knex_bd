@@ -1,6 +1,7 @@
-import { FileText, Tag, X, Plus, Trash2, Upload, Loader2 } from "lucide-react";
+import { FileText, Tag, X, Plus, Trash2, Upload, Loader2, Search } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";
+import SearchableSelect from "./SearchableSelect";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -366,19 +367,16 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 {!showNewCategory ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={categories.map(cat => ({ id: String(cat.id), name: cat.name }))}
                             value={product.categoryId || ""}
-                            onChange={(e) => {
-                                console.log("Category selected:", e.target.value);
-                                setProduct({ ...product, categoryId: e.target.value, subCategoryId: "" });
+                            onChange={(val) => {
+                                console.log("Category selected:", val);
+                                setProduct({ ...product, categoryId: val, subCategoryId: "" });
                             }}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        >
-                            <option value="">Select category</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
-                            ))}
-                        </select>
+                            placeholder="Select category"
+                            className="flex-1"
+                        />
                         <button
                             type="button"
                             onClick={() => {
@@ -476,17 +474,14 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
                 {!showNewSubcategory ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={subCategories.map(sub => ({ id: String(sub.id), name: sub.name }))}
                             value={product.subCategoryId || ""}
-                            onChange={(e) => setProduct({ ...product, subCategoryId: e.target.value })}
+                            onChange={(val) => setProduct({ ...product, subCategoryId: val })}
+                            placeholder="Select subcategory"
                             disabled={!product.categoryId}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-50"
-                        >
-                            <option value="">Select subcategory</option>
-                            {subCategories.map((sub) => (
-                                <option key={sub.id} value={sub.id}>{sub.name}</option>
-                            ))}
-                        </select>
+                            className="flex-1"
+                        />
                         <button
                             type="button"
                             onClick={() => {
@@ -585,16 +580,13 @@ export default function ProductFormFields({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
                 {!showNewBrand ? (
                     <div className="flex gap-2">
-                        <select
+                        <SearchableSelect
+                            options={brands.map(brand => ({ id: String(brand.id), name: brand.name }))}
                             value={product.brandId || ""}
-                            onChange={(e) => setProduct({ ...product, brandId: e.target.value })}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        >
-                            <option value="">Select brand</option>
-                            {brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>{brand.name}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => setProduct({ ...product, brandId: val })}
+                            placeholder="Select brand"
+                            className="flex-1"
+                        />
                         <button
                             type="button"
                             onClick={() => setShowNewBrand(true)}

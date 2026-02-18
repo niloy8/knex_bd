@@ -125,6 +125,9 @@ export default function HomePage() {
             {/* Categories */}
             <section className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-3">
+                    <div className="py-4">
+                        <Banner banners={banners} autoSlide={true} interval={5000} />
+                    </div>
                     <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4">
                         {categories.map((category) => (
                             <CategoryCard key={category.name} {...category} />
@@ -134,8 +137,6 @@ export default function HomePage() {
             </section>
 
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-                {/* Hero Banner */}
-                <Banner banners={banners} autoSlide={true} interval={5000} />
                 {/* Top Deals */}
                 <section>
                     <SectionHeader title="Top Deals" href="/deals" />
