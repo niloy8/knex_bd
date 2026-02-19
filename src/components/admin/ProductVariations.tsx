@@ -30,8 +30,9 @@ export default function ProductVariations({ productType, setProductType, swatchT
     const [uploadingSwatchImage, setUploadingSwatchImage] = useState(false);
     const [uploadingGalleryImage, setUploadingGalleryImage] = useState<number | null>(null);
     const [swatchName, setSwatchName] = useState("");
-    const [swatchImageUrl, setSwatchImageUrl] = useState("");
+    const [swatchImages, setSwatchImages] = useState<string[]>([]);
     const [editingSwatchIndex, setEditingSwatchIndex] = useState<number | null>(null);
+    const [sessionUrls, setSessionUrls] = useState<Set<string>>(new Set());
 
     const uploadImage = async (file: File): Promise<string | null> => {
         const formData = new FormData();
@@ -46,6 +47,7 @@ export default function ProductVariations({ productType, setProductType, swatchT
             if (res.ok) {
                 const data = await res.json();
                 console.log(`Image uploaded: ${data.sizeKB}`);
+                setSessionUrls(prev => new Set(prev).add(data.url));
                 return data.url;
             } else {
                 const error = await res.json();
@@ -59,44 +61,100 @@ export default function ProductVariations({ productType, setProductType, swatchT
         }
     };
 
+    const uploadImages = async (files: FileList): Promise<string[]> => {
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+            formData.append("images", file);
+        });
+
+        try {
+            const res = await fetch(`${API_URL}/upload/multiple`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const urls = data.images.map((img: any) => img.url);
+                setSessionUrls(prev => {
+                    const next = new Set(prev);
+                    urls.forEach((u: string) => next.add(u));
+                    return next;
+                });
+                return urls;
+            } else {
+                const error = await res.json();
+                alert(error.error || "Failed to upload images");
+                return [];
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Failed to upload images");
+            return [];
+        }
+    };
+
+    const deleteImageFromCloudinary = async (url: string) => {
+        try {
+            await fetch(`${API_URL}/upload/delete-by-url`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url }),
+            });
+        } catch (error) {
+            console.error("Error deleting image from session:", error);
+        }
+    };
+
     const handleSwatchImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploadingSwatchImage(true);
-        const url = await uploadImage(file);
-        if (url) {
-            setSwatchImageUrl(url);
+        if (files.length === 1) {
+            const url = await uploadImage(files[0]);
+            if (url) {
+                setSwatchImages(prev => [...prev, url]);
+            }
+        } else {
+            const urls = await uploadImages(files);
+            if (urls.length > 0) {
+                setSwatchImages(prev => [...prev, ...urls]);
+            }
         }
         setUploadingSwatchImage(false);
         e.target.value = "";
     };
 
     const addImageSwatch = () => {
-        if (swatchName.trim() && swatchImageUrl.trim()) {
+        if (swatchName.trim() && swatchImages.length > 0) {
             const newSwatch: ImageSwatchItem = {
                 name: swatchName.trim(),
-                image: swatchImageUrl.trim(),
-                images: [swatchImageUrl.trim()],
+                image: swatchImages[0],
+                images: [...swatchImages],
             };
             setImageSwatch([...imageSwatch, newSwatch]);
             setSwatchName("");
-            setSwatchImageUrl("");
+            setSwatchImages([]);
         }
     };
 
     const handleAddGalleryImage = async (swatchIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploadingGalleryImage(swatchIndex);
-        const url = await uploadImage(file);
-        if (url) {
+
+        const urls = files.length === 1
+            ? [await uploadImage(files[0])].filter((url): url is string => url !== null)
+            : await uploadImages(files);
+
+        if (urls.length > 0) {
             const updated = [...imageSwatch];
             if (!updated[swatchIndex].images) {
                 updated[swatchIndex].images = [updated[swatchIndex].image];
             }
-            updated[swatchIndex].images.push(url);
+            updated[swatchIndex].images = [...updated[swatchIndex].images, ...urls];
             setImageSwatch(updated);
         }
         setUploadingGalleryImage(null);
@@ -105,6 +163,18 @@ export default function ProductVariations({ productType, setProductType, swatchT
 
     const removeGalleryImage = (swatchIndex: number, imageIndex: number) => {
         const updated = [...imageSwatch];
+        const removedUrl = updated[swatchIndex].images[imageIndex];
+
+        // Instant delete if it was uploaded in this session
+        if (sessionUrls.has(removedUrl)) {
+            deleteImageFromCloudinary(removedUrl);
+            setSessionUrls(prev => {
+                const next = new Set(prev);
+                next.delete(removedUrl);
+                return next;
+            });
+        }
+
         updated[swatchIndex].images = updated[swatchIndex].images.filter((_, i) => i !== imageIndex);
         // If removing main image, update it
         if (imageIndex === 0 && updated[swatchIndex].images.length > 0) {
@@ -240,6 +310,7 @@ export default function ProductVariations({ productType, setProductType, swatchT
                                                         <input
                                                             type="file"
                                                             accept="image/*"
+                                                            multiple
                                                             className="hidden"
                                                             onChange={(e) => handleAddGalleryImage(idx, e)}
                                                             disabled={uploadingGalleryImage === idx}
@@ -247,6 +318,26 @@ export default function ProductVariations({ productType, setProductType, swatchT
                                                     </label>
                                                 </div>
                                                 <p className="text-xs text-gray-500 mt-2">{swatch.images?.length || 1} image(s) • Click any image to set as main</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {swatchImages.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {swatchImages.map((img, idx) => (
+                                            <div key={idx} className="relative group">
+                                                <div className="relative w-12 h-12 rounded border overflow-hidden">
+                                                    <Image src={img} alt="Preview" fill className="object-cover" unoptimized />
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        if (sessionUrls.has(img)) deleteImageFromCloudinary(img);
+                                                        setSwatchImages(swatchImages.filter((_, i) => i !== idx));
+                                                    }}
+                                                    className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -263,8 +354,8 @@ export default function ProductVariations({ productType, setProductType, swatchT
                                         <input
                                             type="text"
                                             placeholder="Image URL or upload"
-                                            value={swatchImageUrl}
-                                            onChange={(e) => setSwatchImageUrl(e.target.value)}
+                                            value={swatchImages[0] || ""}
+                                            onChange={(e) => setSwatchImages([e.target.value, ...swatchImages.slice(1)])}
                                             className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                         <label className={`px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer flex items-center ${uploadingSwatchImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -276,6 +367,7 @@ export default function ProductVariations({ productType, setProductType, swatchT
                                             <input
                                                 type="file"
                                                 accept="image/*"
+                                                multiple
                                                 className="hidden"
                                                 onChange={handleSwatchImageUpload}
                                                 disabled={uploadingSwatchImage}
@@ -286,7 +378,7 @@ export default function ProductVariations({ productType, setProductType, swatchT
                                         type="button"
                                         className="px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 flex items-center gap-2"
                                         onClick={addImageSwatch}
-                                        disabled={!swatchName.trim() || !swatchImageUrl.trim()}
+                                        disabled={!swatchName.trim() || swatchImages.length === 0}
                                     >
                                         Add Swatch
                                     </button>
