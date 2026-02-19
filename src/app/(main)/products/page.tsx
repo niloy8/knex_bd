@@ -36,6 +36,7 @@ export default function ProductsPage() {
     const searchParams = useSearchParams();
     const categoryParam = searchParams.get("category");
     const subcategoryParam = searchParams.get("subcategory");
+    const subsubcategoryParam = searchParams.get("subsubcategory");
 
     const [products, setProducts] = useState<Product[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -61,6 +62,7 @@ export default function ProductsPage() {
             const params = new URLSearchParams();
             if (categoryParam) params.set("category", categoryParam);
             if (subcategoryParam) params.set("subcategory", subcategoryParam);
+            if (subsubcategoryParam) params.set("subsubcategory", subsubcategoryParam);
             if (selectedBrands.length > 0) params.set("brand", selectedBrands[0]);
 
             // Add price range filter
@@ -100,7 +102,7 @@ export default function ProductsPage() {
         loadProducts();
 
         return () => { isMounted = false; };
-    }, [categoryParam, subcategoryParam, selectedBrands, selectedPriceRange, sortBy, currentPage]);
+    }, [categoryParam, subcategoryParam, subsubcategoryParam, selectedBrands, selectedPriceRange, sortBy, currentPage]);
 
     useEffect(() => {
         let isMounted = true;
@@ -109,6 +111,7 @@ export default function ProductsPage() {
             const params = new URLSearchParams();
             if (categoryParam) params.set("category", categoryParam);
             if (subcategoryParam) params.set("subcategory", subcategoryParam);
+            if (subsubcategoryParam) params.set("subsubcategory", subsubcategoryParam);
 
             try {
                 const res = await fetch(`${API}/products/brands?${params}`);
@@ -127,11 +130,12 @@ export default function ProductsPage() {
         setCurrentPage(1);
 
         return () => { isMounted = false; };
-    }, [categoryParam, subcategoryParam]);
+    }, [categoryParam, subcategoryParam, subsubcategoryParam]);
 
     const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
     const getCategoryTitle = () => {
+        if (subsubcategoryParam) return subsubcategoryParam.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
         if (subcategoryParam) return subcategoryParam.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
         if (categoryParam) return categoryParam.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
         return "All Products";
@@ -206,6 +210,7 @@ export default function ProductsPage() {
                 tempPriceRange={tempPriceRange}
                 categoryParam={categoryParam}
                 subcategoryParam={subcategoryParam}
+                subsubcategoryParam={subsubcategoryParam}
                 brands={brands}
                 onClose={() => setShowFilters(false)}
                 onApply={handleApplyMobileFilters}
@@ -222,6 +227,7 @@ export default function ProductsPage() {
                         selectedPriceRange={selectedPriceRange}
                         categoryParam={categoryParam}
                         subcategoryParam={subcategoryParam}
+                        subsubcategoryParam={subsubcategoryParam}
                         brands={brands}
                         onToggleBrand={(slug) => toggleBrand(slug, false)}
                         onTogglePriceRange={(index) => togglePriceRange(index, false)}
@@ -238,7 +244,14 @@ export default function ProductsPage() {
                                     <Link href={`/products?category=${categoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
                                         {categoryParam.replace("-", " ")}
                                     </Link>
-                                    {subcategoryParam && <ChevronRight size={16} className="shrink-0" />}
+                                    {subcategoryParam && (
+                                        <>
+                                            <Link href={`/products?category=${categoryParam}&subcategory=${subcategoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
+                                                {subcategoryParam.replace("-", " ")}
+                                            </Link>
+                                            {subsubcategoryParam && <ChevronRight size={16} className="shrink-0" />}
+                                        </>
+                                    )}
                                 </>
                             )}
                             <span className="text-gray-900 font-medium whitespace-nowrap">{getCategoryTitle()}</span>

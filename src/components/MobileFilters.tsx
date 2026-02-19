@@ -7,10 +7,18 @@ import { filters } from "@/data/productsData";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+interface SubSubCategory {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface SubCategory {
     id: number;
     name: string;
     slug: string;
+    subSubCategories?: SubSubCategory[];
+    subsubcategories?: SubSubCategory[];
 }
 
 interface Category {
@@ -33,6 +41,7 @@ interface MobileFiltersProps {
     tempPriceRange: number[];
     categoryParam: string | null;
     subcategoryParam?: string | null;
+    subsubcategoryParam?: string | null;
     brands?: Brand[];
     onClose: () => void;
     onApply: () => void;
@@ -48,6 +57,7 @@ export default function MobileFilters({
     tempPriceRange,
     categoryParam,
     subcategoryParam,
+    subsubcategoryParam,
     brands = [],
     onClose,
     onApply,
@@ -76,6 +86,14 @@ export default function MobileFilters({
 
     const subcategories = currentCategory
         ? (currentCategory.subCategories || currentCategory.subcategories || [])
+        : [];
+
+    const currentSubcategory = subcategoryParam
+        ? subcategories.find(s => s.slug === subcategoryParam)
+        : null;
+
+    const subsubcategories = currentSubcategory
+        ? (currentSubcategory.subSubCategories || currentSubcategory.subsubcategories || [])
         : [];
 
     return (
@@ -154,6 +172,28 @@ export default function MobileFilters({
                                             }`}
                                     >
                                         {sub.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Sub-Subcategories */}
+                    {subcategoryParam && subsubcategories.length > 0 && (
+                        <div className="mb-6">
+                            <h3 className="font-semibold mb-3">Sub-Subcategories</h3>
+                            <div className="space-y-1 max-h-40 overflow-y-auto">
+                                {subsubcategories.map((subSub) => (
+                                    <Link
+                                        key={subSub.id}
+                                        href={`/products?category=${categoryParam}&subcategory=${subcategoryParam}&subsubcategory=${subSub.slug}`}
+                                        onClick={onClose}
+                                        className={`block px-2 py-1.5 rounded text-sm transition ${subsubcategoryParam === subSub.slug
+                                            ? "bg-blue-50 text-blue-600 font-medium"
+                                            : "hover:bg-gray-50 text-gray-700"
+                                            }`}
+                                    >
+                                        {subSub.name}
                                     </Link>
                                 ))}
                             </div>
