@@ -150,8 +150,8 @@ export default function MyOrdersPage() {
                     </div>
 
                     {/* Order Progress */}
-                    <div className="p-6 border-b bg-gray-50">
-                        <div className="flex justify-between items-center max-w-2xl mx-auto">
+                    <div className="p-6 border-b bg-gray-50 overflow-x-auto">
+                        <div className="flex justify-between items-center min-w-[400px] max-w-2xl mx-auto">
                             {["pending", "processing", "shipped", "delivered"].map((step, idx) => {
                                 const stepOrder = ["pending", "processing", "shipped", "delivered"];
                                 const currentIdx = stepOrder.indexOf(selectedOrder.status);
@@ -376,14 +376,16 @@ export default function MyOrdersPage() {
                             className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors"
                         >
                             {/* Order Header */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 border-b">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 border-b">
                                 <div className="flex items-center gap-4">
                                     <div>
                                         <p className="font-semibold text-gray-900">{order.orderNumber}</p>
                                         <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
                                     </div>
                                 </div>
-                                <Badge status={order.status} />
+                                <div className="flex justify-start sm:justify-end">
+                                    <Badge status={order.status} />
+                                </div>
                             </div>
 
                             {/* Order Items Preview */}
@@ -420,14 +422,14 @@ export default function MyOrdersPage() {
                             </div>
 
                             {/* Order Footer */}
-                            <div className="flex items-center justify-between p-4 border-t bg-gray-50">
-                                <div>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-t bg-gray-50">
+                                <div className="flex justify-between sm:justify-start w-full sm:w-auto items-center">
                                     <span className="text-sm text-gray-500">Total:</span>
                                     <span className="ml-2 font-bold text-gray-900">Tk {order.total.toLocaleString()}</span>
                                 </div>
                                 <button
                                     onClick={() => setSelectedOrder(order)}
-                                    className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg border border-blue-100 sm:border-transparent transition-colors"
                                 >
                                     <Eye className="w-4 h-4" />
                                     View Details

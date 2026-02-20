@@ -40,7 +40,7 @@ export default function AccountPage() {
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-20 h-20 rounded-full bg-linear-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold">
                                     {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}

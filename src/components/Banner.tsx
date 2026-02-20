@@ -36,7 +36,7 @@ export default function Banner({ images, autoSlide = true, interval = 5000 }: Ba
     if (!images || images.length === 0) return null;
 
     return (
-        <div className="relative overflow-hidden rounded-2xl group w-full aspect-[4/1] md:aspect-[5/1] bg-[#1a1a1a]">
+        <div className="relative overflow-hidden rounded-2xl group w-full aspect-[4/1] md:aspect-[5/1] bg-[#f2f6ff]">
             <div
                 className="flex transition-transform duration-700 ease-in-out h-full"
                 style={{ transform: `translateX(-${current * 100}%)` }}
@@ -78,12 +78,12 @@ export default function Banner({ images, autoSlide = true, interval = 5000 }: Ba
                             <button
                                 key={idx}
                                 onClick={() => { setCurrent(idx); setKey((prev) => prev + 1); }}
-                                className={`h-2 rounded-full transition-all relative overflow-hidden ${current === idx ? "w-8" : "w-2"} bg-white/50`}
+                                className={`h-2 rounded-full transition-all relative overflow-hidden ${current === idx ? "w-8" : "w-2"} bg-gray-300`}
                             >
                                 {current === idx && autoSlide && (
                                     <div
                                         key={key}
-                                        className="absolute inset-0 bg-white origin-left"
+                                        className="absolute inset-0 bg-blue-600 origin-left"
                                         style={{ animation: `fillBar ${interval}ms linear` }}
                                     />
                                 )}
