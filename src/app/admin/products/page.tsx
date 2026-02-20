@@ -7,6 +7,7 @@ import Badge from "@/components/admin/Badge";
 import { Plus, Edit, Trash2, Search, Loader2, Package, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -43,6 +44,7 @@ export default function AdminProducts() {
     const [totalProducts, setTotalProducts] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const { showToast, confirm } = useNotification();
 
     const fetchProducts = useCallback(async () => {
         setLoading(true);
@@ -106,22 +108,30 @@ export default function AdminProducts() {
     }, [fetchProducts]);
 
     const handleDelete = async (productId: string) => {
-        if (!confirm("Are you sure you want to delete this product?")) return;
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/products/${productId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                fetchProducts();
-            } else {
-                alert("Failed to delete product");
+        confirm({
+            title: "Delete Product",
+            message: "Are you sure you want to delete this product? This action cannot be undone.",
+            confirmText: "Delete",
+            variant: "danger",
+            onConfirm: async () => {
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API_URL}/products/${productId}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                        showToast("Product deleted successfully");
+                        fetchProducts();
+                    } else {
+                        showToast("Failed to delete product", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting product:", error);
+                    showToast("Error deleting product", "error");
+                }
             }
-        } catch (error) {
-            console.error("Error deleting product:", error);
-            alert("Error deleting product");
-        }
+        });
     };
 
     return (

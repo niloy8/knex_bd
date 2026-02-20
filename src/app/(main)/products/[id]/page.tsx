@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -106,6 +107,7 @@ export default function SingleProductPage() {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
     const [submittingReview, setSubmittingReview] = useState(false);
+    const { showToast } = useNotification();
 
     // Cart and Wishlist
     const { addToCart, isInCart } = useCart();
@@ -223,7 +225,7 @@ export default function SingleProductPage() {
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!reviewName || !reviewComment) {
-            alert("Please fill in your name and comment");
+            showToast("Please fill in your name and comment", "warning");
             return;
         }
 
@@ -247,14 +249,14 @@ export default function SingleProductPage() {
                 setReviewEmail("");
                 setReviewRating(5);
                 setReviewComment("");
-                alert("Review submitted successfully!");
+                showToast("Review submitted successfully!");
             } else {
                 const error = await res.json();
-                alert(error.error || "Failed to submit review");
+                showToast(error.error || "Failed to submit review", "error");
             }
         } catch (error) {
             console.error("Error submitting review:", error);
-            alert("Failed to submit review");
+            showToast("Failed to submit review", "error");
         } finally {
             setSubmittingReview(false);
         }
@@ -355,7 +357,7 @@ export default function SingleProductPage() {
             } else {
                 // Fallback: copy to clipboard
                 await navigator.clipboard.writeText(window.location.href);
-                alert("Link copied to clipboard!");
+                showToast("Link copied to clipboard!");
             }
         } catch (error) {
             // User cancelled or error

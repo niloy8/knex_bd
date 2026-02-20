@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import { Save, Globe, Bell } from "lucide-react";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function AdminSettings() {
     const [settings, setSettings] = useState({
@@ -16,12 +17,13 @@ export default function AdminSettings() {
     });
 
     const [saving, setSaving] = useState(false);
+    const { showToast } = useNotification();
 
     const handleSave = async () => {
         setSaving(true);
         await new Promise(resolve => setTimeout(resolve, 1000));
         setSaving(false);
-        alert("Settings saved successfully!");
+        showToast("Settings saved successfully!");
     };
 
     return (

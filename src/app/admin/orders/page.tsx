@@ -20,6 +20,7 @@ import {
     Trash2
 } from "lucide-react";
 import Image from "next/image";
+import { useNotification } from "@/context/NotificationContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -85,6 +86,7 @@ export default function AdminOrders() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [deletingOrder, setDeletingOrder] = useState(false);
+    const { showToast, confirm } = useNotification();
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -164,35 +166,39 @@ export default function AdminOrders() {
     };
 
     const handleDeleteOrder = async (orderId: number) => {
-        if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
-            return;
-        }
+        confirm({
+            title: "Delete Order",
+            message: "Are you sure you want to delete this order? This action cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                setDeletingOrder(true);
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API}/orders/admin/${orderId}`, {
+                        method: "DELETE",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
 
-        setDeletingOrder(true);
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API}/orders/admin/${orderId}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (res.ok) {
-                // Close modal and refresh orders
-                setIsModalOpen(false);
-                setSelectedOrder(null);
-                await fetchOrders();
-            } else {
-                const error = await res.json();
-                alert(error.error || "Failed to delete order");
+                    if (res.ok) {
+                        setIsModalOpen(false);
+                        setSelectedOrder(null);
+                        showToast("Order deleted successfully");
+                        await fetchOrders();
+                    } else {
+                        const error = await res.json();
+                        showToast(error.error || "Failed to delete order", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting order:", error);
+                    showToast("Failed to delete order", "error");
+                } finally {
+                    setDeletingOrder(false);
+                }
             }
-        } catch (error) {
-            console.error("Error deleting order:", error);
-            alert("Failed to delete order");
-        } finally {
-            setDeletingOrder(false);
-        }
+        });
     };
 
     const formatDate = (dateString: string) => {

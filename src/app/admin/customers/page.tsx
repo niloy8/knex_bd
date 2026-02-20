@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import { Users, Download, Search, TrendingUp, ShoppingBag, DollarSign, UserPlus, ChevronLeft, ChevronRight, ArrowUpDown, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { useNotification } from "@/context/NotificationContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -41,6 +42,7 @@ export default function AdminCustomers() {
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [exporting, setExporting] = useState(false);
+    const { showToast } = useNotification();
 
     const fetchStats = useCallback(async () => {
         try {
@@ -114,7 +116,7 @@ export default function AdminCustomers() {
             document.body.removeChild(a);
         } catch (error) {
             console.error("Export error:", error);
-            alert("Failed to export customers");
+            showToast("Failed to export customers", "error");
         } finally {
             setExporting(false);
         }

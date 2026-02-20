@@ -11,6 +11,7 @@ import ProductVariations from "@/components/admin/ProductVariations";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
 import ProductPreview from "@/components/admin/ProductPreview";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -49,6 +50,7 @@ export default function AdminEditProduct() {
     const [description, setDescription] = useState<string>("");
     const [tags, setTags] = useState<string[]>([]);
     const [variants, setVariants] = useState<{ name: string; values: string[]; prices?: { [key: string]: number } }[]>([]);
+    const { showToast } = useNotification();
 
     // Real data from API
     const [categories, setCategories] = useState<Category[]>([]);
@@ -214,11 +216,11 @@ export default function AdminEditProduct() {
                 throw new Error(error.message || "Failed to save product");
             }
 
-            alert(isNew ? "Product created successfully!" : "Product updated successfully!");
+            showToast(isNew ? "Product created successfully!" : "Product updated successfully!");
             router.push("/admin/products");
         } catch (error: any) {
             console.error("Error saving product:", error);
-            alert(error.message || "Error saving product");
+            showToast(error.message || "Error saving product", "error");
         } finally {
             setSaving(false);
         }

@@ -11,6 +11,7 @@ import ProductVariations from "@/components/admin/ProductVariations";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
 import ProductPreview from "@/components/admin/ProductPreview";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -59,6 +60,7 @@ export default function AdminNewProduct() {
     const [description, setDescription] = useState<string>("");
     const [tags, setTags] = useState<string[]>([]);
     const [variants, setVariants] = useState<{ name: string; values: string[]; prices?: { [key: string]: number } }[]>([]);
+    const { showToast } = useNotification();
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -121,11 +123,11 @@ export default function AdminNewProduct() {
 
     const handleSave = async () => {
         if (!product.title) {
-            alert("Please enter a product title");
+            showToast("Please enter a product title", "warning");
             return;
         }
         if (!product.price) {
-            alert("Please enter a product price");
+            showToast("Please enter a product price", "warning");
             return;
         }
 
@@ -176,11 +178,11 @@ export default function AdminNewProduct() {
                 throw new Error(error.message || "Failed to create product");
             }
 
-            alert("Product created successfully!");
+            showToast("Product created successfully!");
             router.push("/admin/products");
         } catch (error: any) {
             console.error("Error creating product:", error);
-            alert(error.message || "Error creating product");
+            showToast(error.message || "Error creating product", "error");
         } finally {
             setSaving(false);
         }

@@ -2,6 +2,7 @@
 import { X, Upload, Loader2, Plus, ImagePlus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -33,6 +34,7 @@ export default function ProductVariations({ productType, setProductType, swatchT
     const [swatchImages, setSwatchImages] = useState<string[]>([]);
     const [editingSwatchIndex, setEditingSwatchIndex] = useState<number | null>(null);
     const [sessionUrls, setSessionUrls] = useState<Set<string>>(new Set());
+    const { showToast } = useNotification();
 
     const uploadImage = async (file: File): Promise<string | null> => {
         const formData = new FormData();
@@ -51,12 +53,12 @@ export default function ProductVariations({ productType, setProductType, swatchT
                 return data.url;
             } else {
                 const error = await res.json();
-                alert(error.error || "Failed to upload image");
+                showToast(error.error || "Failed to upload image", "error");
                 return null;
             }
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Failed to upload image");
+            showToast("Failed to upload image", "error");
             return null;
         }
     };
@@ -84,12 +86,12 @@ export default function ProductVariations({ productType, setProductType, swatchT
                 return urls;
             } else {
                 const error = await res.json();
-                alert(error.error || "Failed to upload images");
+                showToast(error.error || "Failed to upload images", "error");
                 return [];
             }
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Failed to upload images");
+            showToast("Failed to upload images", "error");
             return [];
         }
     };

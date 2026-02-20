@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import { Plus, Shield, Edit, Trash2, X, Save, Mail, Lock, User } from "lucide-react";
+import { useNotification } from "@/context/NotificationContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const allPermissions = ["dashboard", "products", "orders", "customers", "settings"];
@@ -22,6 +23,7 @@ export default function AdminRoles() {
     const [editing, setEditing] = useState<Admin | null>(null);
     const [form, setForm] = useState({ email: "", password: "", name: "", role: "admin", permissions: [] as string[] });
     const [loading, setLoading] = useState(false);
+    const { showToast, confirm } = useNotification();
 
     const getHeaders = () => ({
         "Content-Type": "application/json",
@@ -53,9 +55,27 @@ export default function AdminRoles() {
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Delete this admin?")) return;
-        await fetch(`${API}/admin/${id}`, { method: "DELETE", headers: getHeaders() });
-        fetchAdmins();
+        confirm({
+            title: "Delete Admin",
+            message: "Are you sure you want to delete this admin user?",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${API}/admin/${id}`, { method: "DELETE", headers: getHeaders() });
+                    if (res.ok) {
+                        showToast("Admin deleted successfully");
+                        fetchAdmins();
+                    } else {
+                        const err = await res.json();
+                        showToast(err.error || "Failed to delete admin", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting admin:", error);
+                    showToast("Failed to delete admin", "error");
+                }
+            }
+        });
     };
 
     const openModal = (admin?: Admin) => {

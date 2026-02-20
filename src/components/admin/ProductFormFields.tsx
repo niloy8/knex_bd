@@ -2,6 +2,7 @@ import { FileText, Tag, X, Plus, Trash2, Upload, Loader2, Search } from "lucide-
 import RichTextEditor from "./RichTextEditor";
 import { useState } from "react";
 import SearchableSelect from "./SearchableSelect";
+import { useNotification } from "@/context/NotificationContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -94,6 +95,7 @@ export default function ProductFormFields({
     const [isEditingCategory, setIsEditingCategory] = useState(false);
     const [isEditingSubcategory, setIsEditingSubcategory] = useState(false);
     const [isEditingSubSubcategory, setIsEditingSubSubcategory] = useState(false);
+    const { showToast, confirm } = useNotification();
 
     const uploadImage = async (file: File): Promise<string | null> => {
         const formData = new FormData();
@@ -108,12 +110,12 @@ export default function ProductFormFields({
                 return data.url;
             } else {
                 const error = await res.json();
-                alert(error.error || "Failed to upload image");
+                showToast(error.error || "Failed to upload image", "error");
                 return null;
             }
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Failed to upload image");
+            showToast("Failed to upload image", "error");
             return null;
         }
     };
@@ -146,7 +148,7 @@ export default function ProductFormFields({
                 if (!isEditingCategory) {
                     setProduct({ ...product, categoryId: String(updatedCat.id), subCategoryId: "", subSubCategoryId: "" });
                 }
-                alert(isEditingCategory ? "Category updated successfully!" : "Category added successfully!");
+                showToast(isEditingCategory ? "Category updated successfully!" : "Category added successfully!");
                 setNewCategoryName("");
                 setNewCategoryIcon("");
                 setShowNewCategory(false);
@@ -154,7 +156,7 @@ export default function ProductFormFields({
                 onCategoriesChange?.();
             } else {
                 const err = await res.json();
-                alert(err.error || "Failed to save category");
+                showToast(err.error || "Failed to save category", "error");
             }
         } catch (error) {
             console.error("Error saving category:", error);
@@ -205,7 +207,7 @@ export default function ProductFormFields({
                 if (!isEditingSubcategory) {
                     setProduct({ ...product, subCategoryId: String(updatedSub.id), subSubCategoryId: "" });
                 }
-                alert(isEditingSubcategory ? "Subcategory updated successfully!" : "Subcategory added successfully!");
+                showToast(isEditingSubcategory ? "Subcategory updated successfully!" : "Subcategory added successfully!");
                 setNewSubcategoryName("");
                 setNewSubcategoryImage("");
                 setShowNewSubcategory(false);
@@ -213,7 +215,7 @@ export default function ProductFormFields({
                 onCategoriesChange?.();
             } else {
                 const err = await res.json();
-                alert(err.error || "Failed to save subcategory");
+                showToast(err.error || "Failed to save subcategory", "error");
             }
         } catch (error) {
             console.error("Error saving subcategory:", error);
@@ -249,7 +251,7 @@ export default function ProductFormFields({
                 if (!isEditingSubSubcategory) {
                     setProduct({ ...product, subSubCategoryId: String(updatedSubSub.id) });
                 }
-                alert(isEditingSubSubcategory ? "Sub-subcategory updated successfully!" : "Sub-subcategory added successfully!");
+                showToast(isEditingSubSubcategory ? "Sub-subcategory updated successfully!" : "Sub-subcategory added successfully!");
                 setNewSubSubcategoryName("");
                 setNewSubSubcategoryImage("");
                 setShowNewSubSubcategory(false);
@@ -257,7 +259,7 @@ export default function ProductFormFields({
                 onCategoriesChange?.();
             } else {
                 const err = await res.json();
-                alert(err.error || "Failed to save sub-subcategory");
+                showToast(err.error || "Failed to save sub-subcategory", "error");
             }
         } catch (error) {
             console.error("Error saving sub-subcategory:", error);
@@ -324,91 +326,127 @@ export default function ProductFormFields({
     };
 
     const handleDeleteCategory = async (categoryId: string) => {
-        if (!confirm("Are you sure you want to delete this category? This will fail if it has subcategories or products.")) return;
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories/${categoryId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                if (product.categoryId === categoryId) {
-                    setProduct({ ...product, categoryId: "", subCategoryId: "", subSubCategoryId: "" });
+        confirm({
+            title: "Delete Category",
+            message: "Are you sure you want to delete this category? This will fail if it has subcategories or products.",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API_URL}/categories/${categoryId}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                        if (product.categoryId === categoryId) {
+                            setProduct({ ...product, categoryId: "", subCategoryId: "", subSubCategoryId: "" });
+                        }
+                        showToast("Category deleted successfully");
+                        onCategoriesChange?.();
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || "Failed to delete category", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting category:", error);
+                    showToast("Error deleting category", "error");
                 }
-                onCategoriesChange?.();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete category");
             }
-        } catch (error) {
-            console.error("Error deleting category:", error);
-        }
+        });
     };
 
     const handleDeleteSubcategory = async (subId: string) => {
-        if (!confirm("Are you sure you want to delete this subcategory? This will fail if it has sub-subcategories or products.")) return;
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory/${subId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                if (product.subCategoryId === subId) {
-                    setProduct({ ...product, subCategoryId: "", subSubCategoryId: "" });
+        confirm({
+            title: "Delete Subcategory",
+            message: "Are you sure you want to delete this subcategory? This will fail if it has sub-subcategories or products.",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory/${subId}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                        if (product.subCategoryId === subId) {
+                            setProduct({ ...product, subCategoryId: "", subSubCategoryId: "" });
+                        }
+                        showToast("Subcategory deleted successfully");
+                        onCategoriesChange?.();
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || "Failed to delete subcategory", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting subcategory:", error);
+                    showToast("Error deleting subcategory", "error");
                 }
-                onCategoriesChange?.();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete subcategory");
             }
-        } catch (error) {
-            console.error("Error deleting subcategory:", error);
-        }
+        });
     };
 
     const handleDeleteSubSubcategory = async (subSubId: string) => {
-        if (!confirm("Are you sure you want to delete this sub-subcategory? This will fail if it has products.")) return;
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory/${product.subCategoryId}/subsubcategory/${subSubId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                if (product.subSubCategoryId === subSubId) {
-                    setProduct({ ...product, subSubCategoryId: "" });
+        confirm({
+            title: "Delete Sub-subcategory",
+            message: "Are you sure you want to delete this sub-subcategory? This will fail if it has products.",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API_URL}/categories/${product.categoryId}/subcategory/${product.subCategoryId}/subsubcategory/${subSubId}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                        if (product.subSubCategoryId === subSubId) {
+                            setProduct({ ...product, subSubCategoryId: "" });
+                        }
+                        showToast("Sub-subcategory deleted successfully");
+                        onCategoriesChange?.();
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || "Failed to delete sub-subcategory", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting sub-subcategory:", error);
+                    showToast("Error deleting sub-subcategory", "error");
                 }
-                onCategoriesChange?.();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete sub-subcategory");
             }
-        } catch (error) {
-            console.error("Error deleting sub-subcategory:", error);
-        }
+        });
     };
 
     const handleDeleteBrand = async (brandId: string) => {
-        if (!confirm("Are you sure you want to delete this brand? This will fail if it has products.")) return;
-        try {
-            const token = localStorage.getItem("adminToken");
-            const res = await fetch(`${API_URL}/brands/${brandId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                if (product.brandId === brandId) {
-                    setProduct({ ...product, brandId: "" });
+        confirm({
+            title: "Delete Brand",
+            message: "Are you sure you want to delete this brand? This will fail if it has products.",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const token = localStorage.getItem("adminToken");
+                    const res = await fetch(`${API_URL}/brands/${brandId}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                        if (product.brandId === brandId) {
+                            setProduct({ ...product, brandId: "" });
+                        }
+                        showToast("Brand deleted successfully");
+                        onBrandsChange?.();
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || "Failed to delete brand", "error");
+                    }
+                } catch (error) {
+                    console.error("Error deleting brand:", error);
+                    showToast("Error deleting brand", "error");
                 }
-                onBrandsChange?.();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete brand");
             }
-        } catch (error) {
-            console.error("Error deleting brand:", error);
-        }
+        });
     };
 
     const selectedCategory = categories.find(c => String(c.id) === String(product.categoryId));

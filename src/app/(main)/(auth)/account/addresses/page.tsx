@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Plus, Edit2, Trash2, ArrowLeft, Home, Building, CheckCircle, X, Save } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/context/NotificationContext";
 
 interface Address {
     id: number;
@@ -26,6 +27,7 @@ export default function AddressesPage() {
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState(INITIAL_FORM);
+    const { showToast, confirm } = useNotification();
 
     useEffect(() => {
         if (!authLoading) fetchAddresses();
@@ -61,19 +63,29 @@ export default function AddressesPage() {
         try {
             const endpoint = editingAddress ? `/addresses/${editingAddress.id}` : "/addresses";
             const res = await authFetch(endpoint, { method: editingAddress ? "PUT" : "POST", body: JSON.stringify(formData) });
-            if (res.ok) { fetchAddresses(); resetForm(); }
-            else { const err = await res.json(); alert(err.error || "Failed to save"); }
-        } catch { alert("Failed to save address"); }
+            if (res.ok) { fetchAddresses(); resetForm(); showToast(editingAddress ? "Address updated successfully" : "Address added successfully"); }
+            else { const err = await res.json(); showToast(err.error || "Failed to save", "error"); }
+        } catch { showToast("Failed to save address", "error"); }
         finally { setSaving(false); }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Delete this address?")) return;
-        try {
-            const res = await authFetch(`/addresses/${id}`, { method: "DELETE" });
-            if (res.ok) fetchAddresses();
-            else alert("Failed to delete");
-        } catch { alert("Failed to delete"); }
+        confirm({
+            title: "Delete Address",
+            message: "Are you sure you want to delete this address?",
+            variant: "danger",
+            confirmText: "Delete",
+            onConfirm: async () => {
+                try {
+                    const res = await authFetch(`/addresses/${id}`, { method: "DELETE" });
+                    if (res.ok) {
+                        fetchAddresses();
+                        showToast("Address deleted successfully");
+                    }
+                    else showToast("Failed to delete", "error");
+                } catch { showToast("Failed to delete", "error"); }
+            }
+        });
     };
 
     const handleSetDefault = async (id: number) => {

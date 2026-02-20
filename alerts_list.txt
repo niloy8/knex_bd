@@ -1,0 +1,35 @@
+src/app/(main)/(auth)/account/addresses/page.tsx:65:            else { const err = await res.json(); alert(err.error || "Failed to save"); }
+src/app/(main)/(auth)/account/addresses/page.tsx:66:        } catch { alert("Failed to save address"); }
+src/app/(main)/(auth)/account/addresses/page.tsx:75:            else alert("Failed to delete");
+src/app/(main)/(auth)/account/addresses/page.tsx:76:        } catch { alert("Failed to delete"); }
+src/app/(main)/products/[id]/page.tsx:226:            alert("Please fill in your name and comment");
+src/app/(main)/products/[id]/page.tsx:250:                alert("Review submitted successfully!");
+src/app/(main)/products/[id]/page.tsx:253:                alert(error.error || "Failed to submit review");
+src/app/(main)/products/[id]/page.tsx:257:            alert("Failed to submit review");
+src/app/(main)/products/[id]/page.tsx:358:                alert("Link copied to clipboard!");
+src/app/admin/customers/page.tsx:117:            alert("Failed to export customers");
+src/app/admin/orders/page.tsx:188:                alert(error.error || "Failed to delete order");
+src/app/admin/orders/page.tsx:192:            alert("Failed to delete order");
+src/app/admin/products/new/page.tsx:124:            alert("Please enter a product title");
+src/app/admin/products/new/page.tsx:128:            alert("Please enter a product price");
+src/app/admin/products/new/page.tsx:179:            alert("Product created successfully!");
+src/app/admin/products/new/page.tsx:183:            alert(error.message || "Error creating product");
+src/app/admin/settings/page.tsx:24:        alert("Settings saved successfully!");
+src/components/admin/ProductFormFields.tsx:111:                alert(error.error || "Failed to upload image");
+src/components/admin/ProductFormFields.tsx:116:            alert("Failed to upload image");
+src/components/admin/ProductFormFields.tsx:149:                alert(isEditingCategory ? "Category updated successfully!" : "Category added successfully!");
+src/components/admin/ProductFormFields.tsx:157:                alert(err.error || "Failed to save category");
+src/components/admin/ProductFormFields.tsx:208:                alert(isEditingSubcategory ? "Subcategory updated successfully!" : "Subcategory added successfully!");
+src/components/admin/ProductFormFields.tsx:216:                alert(err.error || "Failed to save subcategory");
+src/components/admin/ProductFormFields.tsx:252:                alert(isEditingSubSubcategory ? "Sub-subcategory updated successfully!" : "Sub-subcategory added successfully!");
+src/components/admin/ProductFormFields.tsx:260:                alert(err.error || "Failed to save sub-subcategory");
+src/components/admin/ProductFormFields.tsx:341:                alert(data.error || "Failed to delete category");
+src/components/admin/ProductFormFields.tsx:363:                alert(data.error || "Failed to delete subcategory");
+src/components/admin/ProductFormFields.tsx:385:                alert(data.error || "Failed to delete sub-subcategory");
+src/components/admin/ProductFormFields.tsx:407:                alert(data.error || "Failed to delete brand");
+src/components/admin/ProductImages.tsx:37:                alert(error.error || "Failed to upload image");
+src/components/admin/ProductImages.tsx:42:            alert("Failed to upload image");
+src/components/admin/ProductVariations.tsx:54:                alert(error.error || "Failed to upload image");
+src/components/admin/ProductVariations.tsx:59:            alert("Failed to upload image");
+src/components/admin/ProductVariations.tsx:87:                alert(error.error || "Failed to upload images");
+src/components/admin/ProductVariations.tsx:92:            alert("Failed to upload images");
