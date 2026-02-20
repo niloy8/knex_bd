@@ -82,13 +82,13 @@ export default function ProductGridCard({
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl font-bold text-gray-900">Tk {price.toLocaleString()}</span>
-                    {originalPrice && (
+                    {originalPrice && originalPrice > price && (
                         <>
                             <span className="text-sm text-gray-400 line-through">
                                 Tk {originalPrice.toLocaleString()}
                             </span>
                             <span className="text-sm text-indigo-600 font-semibold">
-                                {discount}% off
+                                {Math.round(((originalPrice - price) / originalPrice) * 100)}% off
                             </span>
                         </>
                     )}

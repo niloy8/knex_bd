@@ -52,6 +52,10 @@ export default function ProductListCard({
         });
     };
 
+    const calculatedDiscount = originalPrice && originalPrice > price
+        ? Math.round(((originalPrice - price) / originalPrice) * 100)
+        : 0;
+
     return (
         <Link href={href} className="bg-white p-3 sm:p-4 rounded-lg hover:shadow-lg transition-all border border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-4 relative group cursor-pointer">
             {/* Mobile: Heart icon at top right */}
@@ -103,13 +107,13 @@ export default function ProductListCard({
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-xl font-bold">Tk {price.toLocaleString()}</span>
                         </div>
-                        {originalPrice && (
+                        {originalPrice && originalPrice > price && (
                             <div className="flex items-center gap-2">
                                 <span className="text-gray-400 line-through text-xs">
                                     Tk {originalPrice.toLocaleString()}
                                 </span>
                                 <span className="text-indigo-600 font-semibold text-xs">
-                                    {discount}% off
+                                    {calculatedDiscount}% off
                                 </span>
                             </div>
                         )}
@@ -123,18 +127,16 @@ export default function ProductListCard({
                     <div className="flex items-center justify-end gap-2 mb-1">
                         <span className="text-xl md:text-2xl font-semibold">Tk {price.toLocaleString()}</span>
                     </div>
-                    {originalPrice && (
+                    {originalPrice && originalPrice > price && (
                         <div className="flex items-center gap-2 justify-end">
                             <span className="text-gray-400 line-through text-sm">
                                 Tk {originalPrice.toLocaleString()}
                             </span>
                             <span className="text-indigo-600 font-semibold text-sm">
-                                {discount}% off
+                                {calculatedDiscount}% off
                             </span>
                         </div>
                     )}
-                    <p className="text-indigo-700 font-semibold text-xs sm:text-sm mt-1">Super Deals</p>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">Upto Tk 220 Off</p>
                 </div>
                 <button
                     onClick={handleWishlistClick}

@@ -77,10 +77,15 @@ export default function HomePage() {
         fetchCategories();
     }, []);
 
-    const banners = [
-        { title: "Office Chairs", subtitle: "Green Soul, Cell Bell & more", price: "From Tk 2,999", bgColor: "bg-gradient-to-r from-blue-600 to-indigo-600", iconName: "Armchair" },
-        { title: "Gaming Laptops", subtitle: "ASUS, MSI & more", price: "From Tk 49,999", bgColor: "bg-gradient-to-r from-purple-600 to-pink-600", iconName: "Laptop" },
-        { title: "Smart Watches", subtitle: "Apple, Samsung & more", price: "From Tk 1,999", bgColor: "bg-gradient-to-r from-green-600 to-teal-600", iconName: "Watch" },
+    const bannerImages = [
+        {
+            url: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771566855/Banner_1_graraq.png",
+            href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga"
+        },
+        {
+            url: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771566855/Banner_2_mn799l.png",
+            href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga"
+        },
     ];
 
 
@@ -126,7 +131,7 @@ export default function HomePage() {
             <section className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-3">
                     <div className="py-4">
-                        <Banner banners={banners} autoSlide={true} interval={5000} />
+                        <Banner images={bannerImages} autoSlide={true} interval={5000} />
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4">
                         {categories.map((category) => (
