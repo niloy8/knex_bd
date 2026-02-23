@@ -334,6 +334,15 @@ export default function SingleProductPage() {
                 image: product.image,
                 slug: product.slug,
                 inStock: product.inStock,
+                selectedColor: selectedColor || undefined,
+                selectedSize: selectedSize || undefined,
+                selectedVariant: selectedVariant ? {
+                    id: selectedVariant.id,
+                    name: selectedVariant.name,
+                    image: selectedVariant.image,
+                    price: selectedVariant.price
+                } : undefined,
+                customSelections: Object.keys(customSelections).length > 0 ? customSelections : undefined,
             });
         } catch (error) {
             console.error("Error toggling wishlist:", error);
@@ -706,7 +715,7 @@ export default function SingleProductPage() {
                                     <button
                                         onClick={handleWishlistToggle}
                                         disabled={wishlistLoading}
-                                        className={`flex items-center gap-2 transition-colors ${isInWishlist(product.id)
+                                        className={`flex items-center gap-2 transition-colors ${isInWishlist(product.id, selectedColor, selectedSize, Object.keys(customSelections).length > 0 ? customSelections : undefined)
                                             ? "text-red-500 hover:text-red-600"
                                             : "hover:text-blue-600"
                                             } disabled:opacity-50`}
@@ -714,9 +723,9 @@ export default function SingleProductPage() {
                                         {wishlistLoading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
-                                            <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+                                            <Heart className={`w-4 h-4 ${isInWishlist(product.id, selectedColor, selectedSize, Object.keys(customSelections).length > 0 ? customSelections : undefined) ? "fill-current" : ""}`} />
                                         )}
-                                        {isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                                        {isInWishlist(product.id, selectedColor, selectedSize, Object.keys(customSelections).length > 0 ? customSelections : undefined) ? "Remove from Wishlist" : "Add to Wishlist"}
                                     </button>
                                     <button
                                         onClick={handleShare}

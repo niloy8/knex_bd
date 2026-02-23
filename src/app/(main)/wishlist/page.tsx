@@ -17,6 +17,10 @@ export default function WishlistPage() {
             price: item.price,
             image: item.image,
             slug: item.slug,
+            selectedColor: item.selectedColor,
+            selectedSize: item.selectedSize,
+            selectedVariant: item.selectedVariant,
+            customSelections: item.customSelections,
         });
     };
 
@@ -72,6 +76,29 @@ export default function WishlistPage() {
                                             <h3 className="font-medium text-gray-800 hover:text-blue-600 transition-colors">
                                                 {item.title}
                                             </h3>
+                                            {/* Variant Details */}
+                                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+                                                {item.selectedColor && (
+                                                    <span className="flex items-center gap-1">
+                                                        <span className="font-semibold">Color:</span> {item.selectedColor}
+                                                    </span>
+                                                )}
+                                                {item.selectedSize && (
+                                                    <span className="flex items-center gap-1">
+                                                        <span className="font-semibold">Size:</span> {item.selectedSize}
+                                                    </span>
+                                                )}
+                                                {item.selectedVariant?.name && (
+                                                    <span className="flex items-center gap-1">
+                                                        <span className="font-semibold">Variant:</span> {item.selectedVariant.name}
+                                                    </span>
+                                                )}
+                                                {item.customSelections && Object.entries(item.customSelections).map(([key, value]) => (
+                                                    <span key={key} className="flex items-center gap-1">
+                                                        <span className="font-semibold">{key}:</span> {value}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </Link>
                                     </div>
 
@@ -117,7 +144,7 @@ export default function WishlistPage() {
                                                 Add to cart
                                             </button>
                                             <button
-                                                onClick={() => removeFromWishlist(item.productId)}
+                                                onClick={() => removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections)}
                                                 className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer group"
                                                 title="Remove from wishlist"
                                             >
