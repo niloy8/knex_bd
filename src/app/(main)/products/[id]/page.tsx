@@ -112,7 +112,7 @@ export default function SingleProductPage() {
     const { showToast } = useNotification();
 
     // Cart and Wishlist
-    const { addToCart, isInCart } = useCart();
+    const { addToCart, isInCart, isLoggedIn } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const [addingToCart, setAddingToCart] = useState(false);
     const [addedToCart, setAddedToCart] = useState(false);
@@ -273,6 +273,11 @@ export default function SingleProductPage() {
 
     // Handle Add to Cart
     const handleAddToCart = async () => {
+        if (!isLoggedIn) {
+            showToast("Please login to add items to cart", "info");
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+            return;
+        }
         if (!product) return;
         setAddingToCart(true);
         try {
@@ -303,6 +308,11 @@ export default function SingleProductPage() {
 
     // Handle Buy Now - Add to cart and go to cart
     const handleBuyNow = async () => {
+        if (!isLoggedIn) {
+            showToast("Please login to purchase items", "info");
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+            return;
+        }
         if (!product) return;
         setAddingToCart(true);
         try {
@@ -332,6 +342,11 @@ export default function SingleProductPage() {
 
     // Handle Wishlist Toggle
     const handleWishlistToggle = async () => {
+        if (!isLoggedIn) {
+            showToast("Please login to save products", "info");
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+            return;
+        }
         if (!product) return;
         setWishlistLoading(true);
         try {

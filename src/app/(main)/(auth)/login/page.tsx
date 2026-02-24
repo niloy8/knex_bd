@@ -3,13 +3,15 @@
 import { Mail, LogIn, Lock, Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthCard from "@/components/Authcard";
 import { useState } from "react";
 import { signInWithEmail, signInWithGoogle, isAdmin } from "@/lib/authHelper";
 
 export default function Login() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get("redirect");
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -27,7 +29,7 @@ export default function Login() {
                 const { logout } = await import("@/lib/authHelper");
                 await logout();
             } else {
-                router.push("/account");
+                router.push(redirect || "/account");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Login failed");
@@ -46,7 +48,7 @@ export default function Login() {
                 const { logout } = await import("@/lib/authHelper");
                 await logout();
             } else {
-                router.push("/account");
+                router.push(redirect || "/account");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Google login failed");

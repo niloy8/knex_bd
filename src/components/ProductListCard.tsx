@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, Star, Package } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
+import { useRouter } from "next/navigation";
+import { useNotification } from "@/context/NotificationContext";
 
 interface ProductListCardProps {
     id: string;
@@ -34,13 +36,22 @@ export default function ProductListCard({
     badge,
     href,
 }: ProductListCardProps) {
-    const { isInWishlist, toggleWishlist } = useWishlist();
+    const { isInWishlist, toggleWishlist, isLoggedIn } = useWishlist();
+    const router = useRouter();
+    const { showToast } = useNotification();
     const productId = parseInt(id);
     const isWishlisted = isInWishlist(productId);
 
     const handleWishlistClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!isLoggedIn) {
+            showToast("Please login to save products", "info");
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+            return;
+        }
+
         toggleWishlist({
             productId,
             title,

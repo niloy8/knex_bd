@@ -16,6 +16,14 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 // Admin email - only this email has admin access
 const ADMIN_EMAIL = "admin@knex.bd";
 
+// Token change listeners
+type TokenCallback = (token: string | null) => void;
+const tokenListeners: Set<TokenCallback> = new Set();
+
+const notifyTokenListeners = (token: string | null) => {
+    tokenListeners.forEach(callback => callback(token));
+};
+
 export interface AuthUser {
     uid: string;
     email: string;
@@ -57,6 +65,9 @@ const syncWithBackend = async (user: AuthUser): Promise<void> => {
 
             // Sync guest cart/wishlist to backend
             await syncGuestData(data.token);
+
+            // Notify listeners that we have a new token
+            notifyTokenListeners(data.token);
         }
     } catch (error) {
         console.error("Error syncing with backend:", error);
@@ -142,9 +153,23 @@ export const logout = async (): Promise<void> => {
     // Clear backend tokens
     localStorage.removeItem("userToken");
     localStorage.removeItem("userData");
-    // Clear admin tokens as well
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUser");
+
+    // Notify listeners that token is gone
+    notifyTokenListeners(null);
+};
+
+// Listen to backend token changes
+export const onTokenChange = (callback: TokenCallback) => {
+    tokenListeners.add(callback);
+    // Initial call with current token
+    const currentToken = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
+    callback(currentToken);
+
+    return () => {
+        tokenListeners.delete(callback);
+    };
 };
 
 // Get current user (synchronous)

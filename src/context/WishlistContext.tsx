@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { onTokenChange } from "@/lib/authHelper";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -79,7 +80,12 @@ const clearGuestWishlist = () => {
 export function WishlistProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<WishlistItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        if (typeof window !== "undefined") {
+            return !!localStorage.getItem("userToken");
+        }
+        return false;
+    });
 
     const loadWishlist = useCallback(async () => {
         const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
@@ -129,8 +135,23 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         };
 
         initWishlist();
-        return () => { isMounted = false; };
-    }, []);
+
+        // Listen for token changes to update state immediately
+        // This ensures loadWishlist fires only after userToken is in localStorage
+        const unsubscribe = onTokenChange((token) => {
+            setIsLoggedIn(!!token);
+            if (token) {
+                loadWishlist();
+            } else {
+                setItems(getGuestWishlist());
+            }
+        });
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
+    }, [loadWishlist]);
 
     const syncGuestWishlist = useCallback(async (token: string) => {
         const guestItems = getGuestWishlist();

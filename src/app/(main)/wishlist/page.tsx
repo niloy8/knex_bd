@@ -5,23 +5,45 @@ import Link from "next/link";
 import Image from "next/image";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useNotification } from "@/context/NotificationContext";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function WishlistPage() {
-    const { items: wishlistItems, isLoaded, removeFromWishlist } = useWishlist();
+    const { items: wishlistItems, isLoaded, isLoggedIn, removeFromWishlist } = useWishlist();
+    const { showToast } = useNotification();
     const { addToCart } = useCart();
+    const router = useRouter();
+    const [addingToCartId, setAddingToCartId] = useState<string | null>(null);
 
-    const handleAddToCart = (item: typeof wishlistItems[0]) => {
-        addToCart({
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            image: item.image,
-            slug: item.slug,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
-            selectedVariant: item.selectedVariant,
-            customSelections: item.customSelections,
-        });
+    useEffect(() => {
+        if (isLoaded && !isLoggedIn) {
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        }
+    }, [isLoaded, isLoggedIn, router]);
+
+    const handleAddToCart = async (item: typeof wishlistItems[0]) => {
+        setAddingToCartId(item.id);
+        try {
+            await addToCart({
+                productId: item.productId,
+                title: item.title,
+                price: item.price,
+                image: item.image,
+                slug: item.slug,
+                selectedColor: item.selectedColor,
+                selectedSize: item.selectedSize,
+                selectedVariant: item.selectedVariant,
+                customSelections: item.customSelections,
+            });
+            showToast("Product added to cart");
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            showToast("Failed to add item to cart", "error");
+        } finally {
+            setAddingToCartId(null);
+        }
     };
 
     // Show loading while wishlist is being loaded
@@ -135,13 +157,17 @@ export default function WishlistPage() {
                                         <div className="flex items-center gap-2 w-full md:w-auto">
                                             <button
                                                 onClick={() => handleAddToCart(item)}
-                                                disabled={!item.inStock}
-                                                className={`flex-1 md:flex-initial px-6 py-2 rounded-lg font-medium transition-all cursor-pointer ${item.inStock
+                                                disabled={!item.inStock || addingToCartId === item.id}
+                                                className={`flex-1 md:flex-initial px-6 py-2 rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${item.inStock
                                                     ? "bg-blue-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg"
                                                     : "bg-gray-300 text-blue-500 cursor-not-allowed"
                                                     }`}
                                             >
-                                                Add to cart
+                                                {addingToCartId === item.id ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    "Add to cart"
+                                                )}
                                             </button>
                                             <button
                                                 onClick={() => removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections, item.selectedVariant)}

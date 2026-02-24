@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import ProtectedAdmin from "@/components/admin/ProtectAdmin";
 import DataTable from "@/components/admin/DataTable";
 import Badge from "@/components/admin/Badge";
-import { Plus, Edit, Trash2, Search, Loader2, Package, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2, Package, Star, Filter } from "lucide-react";
+import SearchableSelect from "@/components/admin/SearchableSelect";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotification } from "@/context/NotificationContext";
@@ -28,15 +29,23 @@ interface Product {
     brand: { id: string; name: string } | null;
 }
 
-interface Category {
+interface SubCategory {
     id: string;
     name: string;
     slug: string;
 }
 
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    subCategories?: SubCategory[];
+}
+
 export default function AdminProducts() {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("");
+    const [subCategoryFilter, setSubCategoryFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -54,6 +63,7 @@ export default function AdminProducts() {
             params.append("limit", "10");
             if (searchQuery) params.append("search", searchQuery);
             if (categoryFilter) params.append("category", categoryFilter);
+            if (subCategoryFilter) params.append("subcategory", subCategoryFilter);
             if (statusFilter === "instock") params.append("inStock", "true");
             if (statusFilter === "outofstock") params.append("inStock", "false");
 
@@ -77,7 +87,7 @@ export default function AdminProducts() {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, searchQuery, categoryFilter, statusFilter]);
+    }, [currentPage, searchQuery, categoryFilter, subCategoryFilter, statusFilter]);
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -165,25 +175,46 @@ export default function AdminProducts() {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                             />
                         </div>
-                        <select
-                            value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                        >
-                            <option value="">All Categories</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.slug}>{cat.name}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                        >
-                            <option value="">All Status</option>
-                            <option value="instock">In Stock</option>
-                            <option value="outofstock">Out of Stock</option>
-                        </select>
+
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                            <div className="w-full sm:w-48">
+                                <SearchableSelect
+                                    options={[
+                                        { id: "all", name: "All Categories" },
+                                        ...categories.map(cat => ({ id: cat.slug, name: cat.name }))
+                                    ]}
+                                    value={categoryFilter || "all"}
+                                    onChange={(val) => {
+                                        setCategoryFilter(val === "all" ? "" : val);
+                                        setSubCategoryFilter(""); // Reset subcategory when category changes
+                                    }}
+                                    placeholder="Filter Category"
+                                />
+                            </div>
+
+                            <div className="w-full sm:w-48">
+                                <SearchableSelect
+                                    options={[
+                                        { id: "all", name: "All Subcategories" },
+                                        ...(categories.find(c => c.slug === categoryFilter)?.subCategories || []).map(sub => ({ id: sub.slug, name: sub.name }))
+                                    ]}
+                                    value={subCategoryFilter || "all"}
+                                    onChange={(val) => setSubCategoryFilter(val === "all" ? "" : val)}
+                                    placeholder="Filter Subcategory"
+                                    disabled={!categoryFilter}
+                                />
+                            </div>
+
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                            >
+                                <option value="">All Status</option>
+                                <option value="instock">In Stock</option>
+                                <option value="outofstock">Out of Stock</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

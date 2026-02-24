@@ -1,15 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CartItem from "@/components/CartItem";
 import CheckoutModal from "@/components/CheckoutModal";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 
 export default function CartPage() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-    const { items, isLoaded, updateQuantity, removeFromCart, getCartTotal } = useCart();
+    const { items, isLoaded, isLoggedIn, updateQuantity, removeFromCart, getCartTotal } = useCart();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (isLoaded && !isLoggedIn) {
+            router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        }
+    }, [isLoaded, isLoggedIn, router]);
 
     const subtotal = getCartTotal();
 

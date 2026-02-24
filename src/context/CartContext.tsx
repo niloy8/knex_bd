@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { onTokenChange } from "@/lib/authHelper";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -73,7 +74,12 @@ const clearGuestCart = () => {
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        if (typeof window !== "undefined") {
+            return !!localStorage.getItem("userToken");
+        }
+        return false;
+    });
 
     const loadCart = useCallback(async () => {
         const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
@@ -123,8 +129,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
         };
 
         initCart();
-        return () => { isMounted = false; };
-    }, []);
+
+        // Listen for token changes to update state immediately
+        // This ensures loadCart fires only after userToken is in localStorage
+        const unsubscribe = onTokenChange((token) => {
+            setIsLoggedIn(!!token);
+            if (token) {
+                loadCart();
+            } else {
+                setItems(getGuestCart());
+            }
+        });
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
+    }, [loadCart]);
 
     const syncGuestCart = useCallback(async (token: string) => {
         const guestItems = getGuestCart();
