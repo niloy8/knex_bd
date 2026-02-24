@@ -25,9 +25,9 @@ interface WishlistContextType {
     isLoaded: boolean;
     isLoggedIn: boolean;
     addToWishlist: (item: Omit<WishlistItem, "addedOn" | "id">) => Promise<void>;
-    removeFromWishlist: (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>) => Promise<void>;
+    removeFromWishlist: (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>, selectedVariant?: any) => Promise<void>;
     clearWishlist: () => Promise<void>;
-    isInWishlist: (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>) => boolean;
+    isInWishlist: (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>, selectedVariant?: any) => boolean;
     toggleWishlist: (item: Omit<WishlistItem, "addedOn" | "id">) => Promise<void>;
     syncGuestWishlist: (token: string) => Promise<void>;
     refreshWishlist: () => Promise<void>;
@@ -189,6 +189,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                     i.productId === item.productId &&
                     (i.selectedColor || null) === (item.selectedColor || null) &&
                     (i.selectedSize || null) === (item.selectedSize || null) &&
+                    (i.selectedVariant?.id || null) === (item.selectedVariant?.id || null) &&
                     areCustomSelectionsEqual(i.customSelections, item.customSelections)
                 );
                 if (existing) return prev;
@@ -206,7 +207,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
     }, [loadWishlist]);
 
-    const removeFromWishlist = useCallback(async (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>) => {
+    const removeFromWishlist = useCallback(async (productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>, selectedVariant?: any) => {
         const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
 
         if (token) {
@@ -215,6 +216,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                 const params = new URLSearchParams();
                 if (selectedColor) params.append("selectedColor", selectedColor);
                 if (selectedSize) params.append("selectedSize", selectedSize);
+                if (selectedVariant) params.append("selectedVariant", JSON.stringify(selectedVariant));
                 if (customSelections) params.append("customSelections", JSON.stringify(customSelections));
                 if (params.toString()) url += `?${params.toString()}`;
 
@@ -232,6 +234,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                     !(item.productId === productId &&
                         (item.selectedColor || null) === (selectedColor || null) &&
                         (item.selectedSize || null) === (selectedSize || null) &&
+                        (item.selectedVariant?.id || null) === (selectedVariant?.id || null) &&
                         areCustomSelectionsEqual(item.customSelections, customSelections))
                 );
                 saveGuestWishlist(newItems);
@@ -259,18 +262,19 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const isInWishlist = useCallback((productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>) => {
+    const isInWishlist = useCallback((productId: number, selectedColor?: string, selectedSize?: string, customSelections?: Record<string, string>, selectedVariant?: any) => {
         return items.some(item =>
             item.productId === productId &&
             (selectedColor !== undefined ? (item.selectedColor || null) === (selectedColor || null) : true) &&
             (selectedSize !== undefined ? (item.selectedSize || null) === (selectedSize || null) : true) &&
+            (selectedVariant !== undefined ? (item.selectedVariant?.id || null) === (selectedVariant?.id || null) : true) &&
             (customSelections !== undefined ? areCustomSelectionsEqual(item.customSelections, customSelections) : true)
         );
     }, [items]);
 
     const toggleWishlist = useCallback(async (item: Omit<WishlistItem, "addedOn" | "id">) => {
-        if (isInWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections)) {
-            await removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections);
+        if (isInWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections, item.selectedVariant)) {
+            await removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections, item.selectedVariant);
         } else {
             await addToWishlist(item);
         }

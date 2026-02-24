@@ -56,7 +56,7 @@ export default function CartItem({
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-gray-200 last:border-0">
             {/* Product Image & Info */}
-            <div className="flex items-center gap-3 sm:gap-4 flex-1">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-linear-to-br from-gray-800 to-gray-600 rounded-xl flex items-center justify-center shrink-0 shadow-md overflow-hidden relative">
                     {image ? (
                         <Image src={image} alt={title} fill className="object-cover" unoptimized />
@@ -66,17 +66,19 @@ export default function CartItem({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 uppercase mb-1">Product</p>
-                    <h4 className="font-medium text-sm sm:text-base text-gray-900 truncate">{title}</h4>
+                    <p className="text-[10px] text-gray-500 uppercase mb-0.5">Product</p>
+                    <h4 className="font-semibold text-xs sm:text-sm text-gray-900 leading-tight">
+                        {title}
+                    </h4>
                     {variantText && (
-                        <p className="text-xs text-blue-600 mt-0.5">{variantText}</p>
+                        <p className="text-[10px] sm:text-xs text-blue-600 mt-1">{variantText}</p>
                     )}
-                    <p className="text-xs sm:hidden text-gray-600 mt-1">Tk {price.toLocaleString()} each</p>
+                    <p className="text-[10px] sm:hidden text-gray-600 mt-1">Tk {price.toLocaleString()} each</p>
                 </div>
             </div>
 
             {/* Controls - Mobile/Desktop Layout */}
-            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0 mt-2 sm:mt-0">
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-2 sm:gap-3">
                     <button

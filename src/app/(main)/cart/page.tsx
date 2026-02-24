@@ -87,7 +87,7 @@ export default function CartPage() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs sm:text-sm text-gray-600 mb-2">GIVE CODE</label>
+                                            <label className="block text-xs sm:text-sm text-gray-600 mb-2">GIVE CODE <br />(If You Have Any To Get Discount)</label>
                                             <div className="flex gap-2">
                                                 <input
                                                     type="text"

@@ -144,7 +144,7 @@ export default function WishlistPage() {
                                                 Add to cart
                                             </button>
                                             <button
-                                                onClick={() => removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections)}
+                                                onClick={() => removeFromWishlist(item.productId, item.selectedColor, item.selectedSize, item.customSelections, item.selectedVariant)}
                                                 className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer group"
                                                 title="Remove from wishlist"
                                             >

@@ -173,7 +173,7 @@ export default function HomePage() {
                             title="Top Selling Lehengas"
                             subtitle="Latest Technology, Best Brands"
                             buttonText="Explore Now"
-                            href="/products?category=fashion&subcategory=women&subsubcategory=Bengali Sari"
+                            href="/products?category=fashion&subcategory=women&subsubcategory=lehenga"
                             image="https://res.cloudinary.com/dh34a84tc/image/upload/v1771823778/Product_Banner_hsb6ko.jpg"
                         />
                     </div>
