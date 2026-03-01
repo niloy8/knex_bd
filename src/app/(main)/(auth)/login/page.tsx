@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthCard from "@/components/Authcard";
 import { useState } from "react";
 import { signInWithEmail, signInWithGoogle, isAdmin } from "@/lib/authHelper";
+import { isValidRedirect } from "@/lib/security";
 
 export default function Login() {
     const router = useRouter();
@@ -29,7 +30,8 @@ export default function Login() {
                 const { logout } = await import("@/lib/authHelper");
                 await logout();
             } else {
-                router.push(redirect || "/account");
+                const destination = isValidRedirect(redirect) ? redirect! : "/account";
+                router.push(destination);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Login failed");
@@ -48,7 +50,8 @@ export default function Login() {
                 const { logout } = await import("@/lib/authHelper");
                 await logout();
             } else {
-                router.push(redirect || "/account");
+                const destination = isValidRedirect(redirect) ? redirect! : "/account";
+                router.push(destination);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Google login failed");
@@ -90,6 +93,7 @@ export default function Login() {
                             type={showPassword ? "text" : "password"}
                             placeholder="Password"
                             required
+                            minLength={6}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={loading}
