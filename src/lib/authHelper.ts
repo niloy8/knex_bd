@@ -52,25 +52,41 @@ const syncWithBackend = async (user: AuthUser): Promise<void> => {
             }),
         });
 
-        if (res.ok) {
-            const data = await res.json();
-            // Store backend JWT token for cart/wishlist operations
-            localStorage.setItem("userToken", data.token);
-            localStorage.setItem("userData", JSON.stringify(data.user));
-
-            // Clear admin tokens when regular user logs in
-            // This prevents accessing admin panel with stale admin credentials
-            localStorage.removeItem("adminToken");
-            localStorage.removeItem("adminUser");
-
-            // Sync guest cart/wishlist to backend
-            await syncGuestData(data.token);
-
-            // Notify listeners that we have a new token
-            notifyTokenListeners(data.token);
+        if (!res.ok) {
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Backend synchronization failed");
+            } else {
+                // Handle non-JSON error pages (like 404 or 500 HTML)
+                throw new Error(`Server error (${res.status}). Please try again later.`);
+            }
         }
+
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Invalid server response format");
+        }
+
+        const data = await res.json();
+        // Store backend JWT token for cart/wishlist operations
+        localStorage.setItem("userToken", data.token);
+        localStorage.setItem("userData", JSON.stringify(data.user));
+
+        // Clear admin tokens when regular user logs in
+        // This prevents accessing admin panel with stale admin credentials
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+
+        // Sync guest cart/wishlist to backend
+        await syncGuestData(data.token);
+
+        // Notify listeners that we have a new token
+        notifyTokenListeners(data.token);
     } catch (error) {
         console.error("Error syncing with backend:", error);
+        // Re-throw to let the caller handle UI feedback
+        throw error;
     }
 };
 

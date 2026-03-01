@@ -19,6 +19,17 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const formatErrorMessage = (message: string) => {
+        if (message.includes("is not valid JSON") || message.includes("Unexpected token")) {
+            return "Unable to connect to the server. Please try again later.";
+        }
+        if (message.includes("auth/")) {
+            // Clean up Firebase error codes if they leak through
+            return message.replace(/auth\/[a-z-]+/g, "").replace(/[()]/g, "").trim();
+        }
+        return message;
+    };
+
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
@@ -34,7 +45,7 @@ export default function Login() {
                 router.push(destination);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Login failed");
+            setError(formatErrorMessage(err instanceof Error ? err.message : "Login failed"));
         } finally {
             setLoading(false);
         }
@@ -54,7 +65,7 @@ export default function Login() {
                 router.push(destination);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Google login failed");
+            setError(formatErrorMessage(err instanceof Error ? err.message : "Google login failed"));
         } finally {
             setLoading(false);
         }
