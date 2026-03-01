@@ -16,7 +16,7 @@ export default function AuthCard({ title, subtitle, children }: Props) {
                 <div className="flex flex-col items-center">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 relative">
                         <Image
-                            src="https://knex.com.bd/wp-content/uploads/2025/07/3d-png.png"
+                            src="https://res.cloudinary.com/dh34a84tc/image/upload/v1772353425/3d-png_lcu5qg.png"
                             alt="KNEX"
                             fill
                             sizes="80px"

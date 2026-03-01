@@ -301,7 +301,7 @@ export default function CheckoutModal({ isOpen, onClose, total }: CheckoutModalP
 
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 relative shrink-0">
-                        <Image src="https://knex.com.bd/wp-content/uploads/2025/07/3d-png.png" alt="KNEX" fill className="object-contain" />
+                        <Image src="https://res.cloudinary.com/dh34a84tc/image/upload/v1772353425/3d-png_lcu5qg.png" alt="KNEX" fill className="object-contain" />
                     </div>
                     <div>
                         <h2 className="text-xl md:text-2xl font-bold text-gray-900">Checkout</h2>
