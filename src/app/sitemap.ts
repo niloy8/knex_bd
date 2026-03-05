@@ -55,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             for (const cat of categories) {
                 // Category
                 sitemapEntries.push({
-                    url: escapeXml(`${BASE_URL}/products?category=${cat.slug}`),
+                    url: escapeXml(`${BASE_URL}/category/${cat.slug}`),
                     lastModified: new Date(),
                     changeFrequency: 'weekly',
                     priority: 0.7,
@@ -65,7 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 if (cat.subCategories && Array.isArray(cat.subCategories)) {
                     for (const sub of cat.subCategories) {
                         sitemapEntries.push({
-                            url: escapeXml(`${BASE_URL}/products?category=${cat.slug}&subcategory=${sub.slug}`),
+                            url: escapeXml(`${BASE_URL}/category/${cat.slug}/${sub.slug}`),
                             lastModified: new Date(),
                             changeFrequency: 'weekly',
                             priority: 0.6,
@@ -75,7 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                         if (sub.subSubCategories && Array.isArray(sub.subSubCategories)) {
                             for (const subSub of sub.subSubCategories) {
                                 sitemapEntries.push({
-                                    url: escapeXml(`${BASE_URL}/products?category=${cat.slug}&subcategory=${sub.slug}&subsubcategory=${subSub.slug}`),
+                                    url: escapeXml(`${BASE_URL}/category/${cat.slug}/${sub.slug}/${subSub.slug}`),
                                     lastModified: new Date(),
                                     changeFrequency: 'weekly',
                                     priority: 0.5,

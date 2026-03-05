@@ -108,7 +108,7 @@ export default function CategoryNav() {
                                 onMouseLeave={handleMouseLeave}
                             >
                                 <Link
-                                    href={`/products?category=${category.slug}`}
+                                    href={`/category/${category.slug}`}
                                     className={`
                                         flex items-center gap-1 px-3 sm:px-4 py-3
                                         text-xs sm:text-sm font-medium whitespace-nowrap
@@ -145,7 +145,7 @@ export default function CategoryNav() {
                             {activeSubs.map((sub) => (
                                 <Link
                                     key={sub.id}
-                                    href={`/products?category=${activeDropdown}&subcategory=${sub.slug}`}
+                                    href={`/category/${activeDropdown}/${sub.slug}`}
                                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150"
                                 >
                                     <div className="relative w-8 h-8 shrink-0">

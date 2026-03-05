@@ -142,7 +142,7 @@ export default function MobileFilters({
                                 {categories.map((cat) => (
                                     <Link
                                         key={cat.id}
-                                        href={`/products?category=${cat.slug}`}
+                                        href={`/category/${cat.slug}`}
                                         onClick={onClose}
                                         className={`block px-2 py-1.5 rounded text-sm transition ${categoryParam === cat.slug
                                             ? "bg-blue-50 text-blue-600 font-medium"
@@ -164,7 +164,7 @@ export default function MobileFilters({
                                 {subcategories.map((sub) => (
                                     <Link
                                         key={sub.id}
-                                        href={`/products?category=${categoryParam}&subcategory=${sub.slug}`}
+                                        href={`/category/${categoryParam}/${sub.slug}`}
                                         onClick={onClose}
                                         className={`block px-2 py-1.5 rounded text-sm transition ${subcategoryParam === sub.slug
                                             ? "bg-blue-50 text-blue-600 font-medium"
@@ -186,7 +186,7 @@ export default function MobileFilters({
                                 {subsubcategories.map((subSub) => (
                                     <Link
                                         key={subSub.id}
-                                        href={`/products?category=${categoryParam}&subcategory=${subcategoryParam}&subsubcategory=${subSub.slug}`}
+                                        href={`/category/${categoryParam}/${subcategoryParam}/${subSub.slug}`}
                                         onClick={onClose}
                                         className={`block px-2 py-1.5 rounded text-sm transition ${subsubcategoryParam === subSub.slug
                                             ? "bg-blue-50 text-blue-600 font-medium"

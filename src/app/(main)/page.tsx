@@ -50,7 +50,7 @@ export default function HomePage() {
                             name: cat.name,
                             slug: cat.slug,
                             icon: imageUrl,
-                            href: `/products?category=${cat.slug}`,
+                            href: `/category/${cat.slug}`,
                             badge: cat.name === "Stone" ? "NEW" : undefined,
                             subCategories: cat.subCategories || []
                         };
@@ -61,13 +61,13 @@ export default function HomePage() {
                 console.error("Error fetching categories:", error);
                 // Fallback to default categories if fetch fails
                 setCategories([
-                    { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/products?category=fashion" },
-                    { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/products?category=beauty" },
-                    { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/products?category=mobiles" },
-                    { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/products?category=smart-gadget" },
-                    { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/products?category=electronics" },
-                    { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/products?category=home-furniture" },
-                    { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/products?category=stone", badge: "NEW" },
+                    { name: "Fashion", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Faison-removebg-preview.png", href: "/category/fashion" },
+                    { name: "Beauty", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Beauty-2-1-removebg-preview-1.png", href: "/category/beauty" },
+                    { name: "Mobiles", icon: "https://knex.com.bd/wp-content/uploads/2025/11/mobiles-2-removebg-preview.png", href: "/category/mobiles" },
+                    { name: "Smart Gadget", icon: "https://knex.com.bd/wp-content/uploads/2025/11/smart-gadget-removebg-preview.png", href: "/category/smart-gadget" },
+                    { name: "Electronics", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Home-2-removebg-preview.png", href: "/category/electronics" },
+                    { name: "Home & Furniture", icon: "https://knex.com.bd/wp-content/uploads/2025/11/Electronicss-removebg-preview.png", href: "/category/home-furniture" },
+                    { name: "Stone", icon: "https://knex.com.bd/wp-content/uploads/2025/11/ChatGPT-Image-Nov-2-2025-02_17_01-PM-removebg-preview.png", href: "/category/stone", badge: "NEW" },
                 ]);
             } finally {
                 setLoading(false);
@@ -80,21 +80,21 @@ export default function HomePage() {
     const bannerImages = [
         {
             url: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771566855/Banner_1_graraq.png",
-            href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga"
+            href: "/category/fashion/women/lehenga"
         },
         {
             url: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771566855/Banner_2_mn799l.png",
-            href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga"
+            href: "/category/fashion/women/lehenga"
         },
     ];
 
 
 
     const topDeals = [
-        { title: "Royal Noor Lehenga", price: "From Tk 6990", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742122/knex_uploads/product%204-1771742121264-1771742121431.webp", href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga" },
-        { title: "Meher Mahal Bridal Lehenga", price: "From Tk 499", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742072/knex_uploads/product%203-1771742070704-1771742071105.webp", href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga" },
-        { title: "Zarqa Velvet Dream Lehenga", price: "From Tk 6599", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742112/knex_uploads/product%201-1771742111293-1771742111537.webp", href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga" },
-        { title: "Sundari Blossom Lehenga", price: "From Tk 8279", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771821836/product_5_cus2zj.jpg", href: "/products?category=fashion&subcategory=women&subsubcategory=lehenga" },
+        { title: "Royal Noor Lehenga", price: "From Tk 6990", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742122/knex_uploads/product%204-1771742121264-1771742121431.webp", href: "/category/fashion/women/lehenga" },
+        { title: "Meher Mahal Bridal Lehenga", price: "From Tk 499", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742072/knex_uploads/product%203-1771742070704-1771742071105.webp", href: "/category/fashion/women/lehenga" },
+        { title: "Zarqa Velvet Dream Lehenga", price: "From Tk 6599", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771742112/knex_uploads/product%201-1771742111293-1771742111537.webp", href: "/category/fashion/women/lehenga" },
+        { title: "Sundari Blossom Lehenga", price: "From Tk 8279", image: "https://res.cloudinary.com/dh34a84tc/image/upload/v1771821836/product_5_cus2zj.jpg", href: "/category/fashion/women/lehenga" },
     ];
 
     // const saleDeals = [
@@ -144,7 +144,7 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
                 {/* Top Deals */}
                 <section>
-                    <SectionHeader title="Top Deals" href="/products?category=fashion&subcategory=women&subsubcategory=lehenga" />
+                    <SectionHeader title="Top Deals" href="/category/fashion/women/lehenga" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {topDeals.map((deal) => (
                             <ProductCard key={deal.title} {...deal} />
@@ -153,8 +153,8 @@ export default function HomePage() {
                 </section>
                 {/* Three-column row: two deals sections + promo */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <DealsSection title="Entering New Stage of Life" items={winterEssentials} viewAllHref="/products?category=fashion&subcategory=women&subsubcategory=bengali-wedding-sari" />
-                    <DealsSection title="Top picks of the sale" items={topPicksSale} viewAllHref="/products?category=fashion&subcategory=women&subsubcategory=salwar-kameez-and-dress" />
+                    <DealsSection title="Entering New Stage of Life" items={winterEssentials} viewAllHref="/category/fashion/women/bengali-wedding-sari" />
+                    <DealsSection title="Top picks of the sale" items={topPicksSale} viewAllHref="/category/fashion/women/salwar-kameez-and-dress" />
                     <FashionPromo
                         title="Shop your fashion Needs"
                         subtitle="with Latest & Trendy Choices"
@@ -166,14 +166,14 @@ export default function HomePage() {
                 {/* Fashion's Top Deals + Smartphones Promo (row) */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-1">
-                        <DealsSection title="Fashion's Top Deals" items={fashionTopDealsGrid} viewAllHref="/products?category=fashion" />
+                        <DealsSection title="Fashion's Top Deals" items={fashionTopDealsGrid} viewAllHref="/category/fashion" />
                     </div>
                     <div className="lg:col-span-2">
                         <FashionPromo
                             title="Top Selling Lehengas"
                             subtitle="Latest Technology, Best Brands"
                             buttonText="Explore Now"
-                            href="/products?category=fashion&subcategory=women&subsubcategory=lehenga"
+                            href="/category/fashion/women/lehenga"
                             image="https://res.cloudinary.com/dh34a84tc/image/upload/v1771823778/Product_Banner_hsb6ko.jpg"
                         />
                     </div>

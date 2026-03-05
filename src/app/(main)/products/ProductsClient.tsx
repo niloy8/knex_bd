@@ -241,12 +241,12 @@ export default function ProductsClient() {
                             <ChevronRight size={16} className="shrink-0" />
                             {categoryParam && (
                                 <>
-                                    <Link href={`/products?category=${categoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
+                                    <Link href={`/category/${categoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
                                         {categoryParam.replace("-", " ")}
                                     </Link>
                                     {subcategoryParam && (
                                         <>
-                                            <Link href={`/products?category=${categoryParam}&subcategory=${subcategoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
+                                            <Link href={`/category/${categoryParam}/${subcategoryParam}`} className="hover:text-blue-600 cursor-pointer whitespace-nowrap capitalize">
                                                 {subcategoryParam.replace("-", " ")}
                                             </Link>
                                             {subsubcategoryParam && <ChevronRight size={16} className="shrink-0" />}

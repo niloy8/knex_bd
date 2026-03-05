@@ -880,7 +880,9 @@ export default function SingleProductPage() {
                                     </div>
                                     <div className="flex">
                                         <span className="w-24 text-gray-500">Category:</span>
-                                        <span className="text-blue-600 hover:underline cursor-pointer capitalize">{product.category?.name || "N/A"}</span>
+                                        <Link href={`/category/${product.category?.slug}`} className="text-blue-600 hover:underline cursor-pointer capitalize">
+                                            {product.category?.name || "N/A"}
+                                        </Link>
                                     </div>
                                     {(product.tags?.length ?? 0) > 0 && (
                                         <div className="flex">

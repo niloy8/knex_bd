@@ -123,7 +123,7 @@ export default function DesktopFilters({
                             {categories.map((cat) => (
                                 <Link
                                     key={cat.id}
-                                    href={`/products?category=${cat.slug}`}
+                                    href={`/category/${cat.slug}`}
                                     className={`block px-2 py-1.5 rounded text-sm transition ${categoryParam === cat.slug
                                         ? "bg-blue-50 text-blue-600 font-medium"
                                         : "hover:bg-gray-50 text-gray-700"
@@ -144,7 +144,7 @@ export default function DesktopFilters({
                             {subcategories.map((sub) => (
                                 <Link
                                     key={sub.id}
-                                    href={`/products?category=${categoryParam}&subcategory=${sub.slug}`}
+                                    href={`/category/${categoryParam}/${sub.slug}`}
                                     className={`block px-2 py-1.5 rounded text-sm transition ${subcategoryParam === sub.slug
                                         ? "bg-blue-50 text-blue-600 font-medium"
                                         : "hover:bg-gray-50 text-gray-700"
@@ -165,7 +165,7 @@ export default function DesktopFilters({
                             {subsubcategories.map((subSub) => (
                                 <Link
                                     key={subSub.id}
-                                    href={`/products?category=${categoryParam}&subcategory=${subcategoryParam}&subsubcategory=${subSub.slug}`}
+                                    href={`/category/${categoryParam}/${subcategoryParam}/${subSub.slug}`}
                                     className={`block px-2 py-1.5 rounded text-sm transition ${subsubcategoryParam === subSub.slug
                                         ? "bg-blue-50 text-blue-600 font-medium"
                                         : "hover:bg-gray-50 text-gray-700"
