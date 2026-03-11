@@ -8,7 +8,6 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: '*',
                 allow: '/',
-                crawlDelay: 5,
                 disallow: [
                     '/admin',
                     '/login',
