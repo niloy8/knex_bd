@@ -134,9 +134,20 @@ export default function HomePage() {
                         <Banner images={bannerImages} autoSlide={true} interval={5000} />
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4">
-                        {categories.map((category) => (
-                            <CategoryCard key={category.name} {...category} />
-                        ))}
+                        {loading ? (
+                            Array.from({ length: 7 }).map((_, i) => (
+                                <div key={i} className="flex flex-col items-center animate-pulse">
+                                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-32 lg:h-32 p-3">
+                                        <div className="w-full h-full bg-gray-200 rounded-full"></div>
+                                    </div>
+                                    <div className="w-16 h-3 sm:h-4 bg-gray-200 rounded -mt-1"></div>
+                                </div>
+                            ))
+                        ) : (
+                            categories.map((category) => (
+                                <CategoryCard key={category.name} {...category} />
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
