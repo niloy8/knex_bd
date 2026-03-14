@@ -1,4 +1,4 @@
-# KNEX Frontend - Digital Commerce Platform
+# KNEX-BD- Digital Commerce Platform
 
 KNEX is a high-performance, enterprise-grade e-commerce frontend designed to deliver a premium shopping experience to customers across Bangladesh. Developed with **Next.js 16**, this platform is engineered for speed, search engine dominance, and a seamless user journey.
 
